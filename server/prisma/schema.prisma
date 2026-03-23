@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  content   String   @db.Text
+  excerpt   String?
+  imageUrl  String?
+  viewCount Int      @default(0)
+  category  String @db.VarChar(32)
+  createdAt DateTime @default(now())
+
+  visitorLogs VisitorLog[]
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  techStack   String
+  imageUrl    String?
+  githubLink  String?
+  liveLink    String?
+  createdAt   DateTime @default(now())
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+}
+
+model VisitorLog {
+  id        Int      @id @default(autoincrement())
+  ip        String
+  country   String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+
+  @@index([postId])
+  @@index([createdAt])
+  @@index([country])
+}

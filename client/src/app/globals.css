@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════
+   FATIH BLOG — DUAL THEME (dark default / light opt-in)
+   ─────────────────────────────────────────────────────
+   Dark  (default): bg #0f172a  |  Light: bg #f8fafc
+═══════════════════════════════════════════════════ */
+
+:root, html.dark {
+  --bg:           15 23 42;      /* slate-900   */
+  --surface:      30 41 59;      /* slate-800   */
+  --surface2:     51 65 85;      /* slate-700   */
+  --border:       71 85 105;     /* slate-600   */
+  --t1:           248 250 252;   /* slate-50    */
+  --t2:           226 232 240;   /* slate-200   */
+  --t3:           148 163 184;   /* slate-400   */
+  --t-muted:      100 116 139;   /* slate-500   */
+  --a1:           99  102 241;   /* indigo-500  */
+  --a2:           139  92 246;   /* violet-500  */
+  --a3:            52 211 153;   /* emerald-400 */
+  --aura-opacity: 0.14;
+  color-scheme: dark;
+}
+
+html.light {
+  --bg:           248 250 252;   /* slate-50    */
+  --surface:      255 255 255;   /* white       */
+  --surface2:     241 245 249;   /* slate-100   */
+  --border:       203 213 225;   /* slate-300   */
+  --t1:            15  23  42;   /* slate-900   */
+  --t2:            30  41  59;   /* slate-800   */
+  --t3:            71  85 105;   /* slate-600   */
+  --t-muted:      100 116 139;   /* slate-500   */
+  --a1:            79  70 229;   /* indigo-600  */
+  --a2:           124  58 237;   /* violet-600  */
+  --a3:            16 185 129;   /* emerald-500 */
+  --aura-opacity: 0.06;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: rgb(var(--bg));
+  --color-foreground:  rgb(var(--t1));
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background:  rgb(var(--bg));
+  color:       rgb(var(--t1));
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+  cursor: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+a, button, input, textarea, select, label { cursor: none; }
+
+.footer-nav-link {
+  color: rgb(var(--t3));
+}
+.footer-nav-link:hover {
+  color: rgb(var(--t1));
+}
+
+::selection {
+  background: rgba(var(--a1), 0.25);
+  color: rgb(var(--t1));
+}
+
+* { -webkit-tap-highlight-color: transparent; }
+
+:focus-visible {
+  outline: 2px solid rgba(var(--a1), 0.6);
+  outline-offset: 3px;
+}
+
+/* ─── LIGHT MODE OVERRIDES for Tailwind fixed classes ─ */
+/* Cards */
+html.light .card-surface  { background: rgb(var(--surface)); border-color: rgb(var(--border)); }
+html.light .t-primary     { color: rgb(var(--t1)); }
+html.light .t-secondary   { color: rgb(var(--t2)); }
+html.light .t-muted        { color: rgb(var(--t3)); }
+
+/* ─── Blog prose ───────────────────────────────────── */
+.blog-prose {
+  color: rgb(var(--t2));
+  line-height: 1.875;
+  font-size: 0.9375rem;
+}
+.blog-prose h1,.blog-prose h2,.blog-prose h3,.blog-prose h4 {
+  color: rgb(var(--t1));
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+}
+.blog-prose h2 { font-size: 1.45rem; }
+.blog-prose h3 { font-size: 1.2rem;  }
+.blog-prose p  { margin: 0 0 1.2em; }
+.blog-prose a  { color: rgb(var(--a1)); text-decoration: underline; }
+.blog-prose a:hover { opacity: 0.8; }
+.blog-prose strong { color: rgb(var(--t1)); font-weight: 700; }
+.blog-prose code {
+  background: rgb(var(--surface2));
+  border-radius: 0.35em;
+  padding: 0.15em 0.45em;
+  font-size: 0.85em;
+  color: #fca5a5;
+}
+html.light .blog-prose code { color: #dc2626; }
+.blog-prose pre {
+  background: rgb(var(--surface));
+  border: 1px solid rgb(var(--surface2));
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  margin: 1.5em 0;
+}
+.blog-prose pre code { background: none; padding: 0; color: rgb(var(--t2)); font-size: 0.85rem; }
+.blog-prose blockquote {
+  border-left: 3px solid rgba(var(--a1), 0.6);
+  padding-left: 1.25em;
+  color: rgb(var(--t3));
+  font-style: italic;
+  margin: 1.5em 0;
+}
+.blog-prose ul,.blog-prose ol { padding-left: 1.5em; margin-bottom: 1.2em; }
+.blog-prose li { margin-bottom: 0.35em; }
+.blog-prose img { border-radius: 1rem; width: 100%; }
+.blog-prose hr { border: none; border-top: 1px solid rgb(var(--surface2)); margin: 2em 0; }
+
+/* ─── Scroll-to-top dock ───────────────────────────── */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 5.5rem;
+  right: 1.25rem;
+  z-index: 39;
+}
+
+/* ─── Animations ────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+@keyframes float-y {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
+}
+@keyframes pulse-glow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.4); }
+  50%     { box-shadow: 0 0 0 8px rgba(99,102,241,0); }
+}
+.animate-shimmer  { animation: shimmer   2.5s linear infinite; }
+.animate-float    { animation: float-y   3s ease-in-out infinite; }
+.animate-pg       { animation: pulse-glow 2s ease-in-out infinite; }
+
+/* ─── Skill bar ─────────────────────────────────────── */
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.skill-bar-fill {
+  transform-origin: left;
+  animation: grow-x 1.2s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ─── Admin Markdown editör (@uiw) — global cursor:none yazı alanını öldürebilir */
+.w-md-editor textarea,
+.w-md-editor .w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text-textarea {
+  cursor: text !important;
+}
+.w-md-editor .w-md-editor-toolbar button,
+.w-md-editor .w-md-editor-toolbar [role="button"] {
+  cursor: pointer !important;
+}
+.w-md-editor .w-md-editor-text {
+  min-height: 280px;
+}

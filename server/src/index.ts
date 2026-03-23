@@ -1,0 +1,72 @@
+import "dotenv/config";
+import path from "path";
+import cors from "cors";
+import express from "express";
+
+import { ensureUploadsDir, getUploadsDir } from "./lib/upload";
+import { errorMiddleware } from "./middleware/error.middleware";
+import { authRouter } from "./routes/auth.routes";
+import { adminRouter } from "./routes/admin.routes";
+import { contactRouter } from "./routes/contact.routes";
+import { postRouter } from "./routes/post.routes";
+import { projectRouter } from "./routes/project.routes";
+import { uploadRouter } from "./routes/upload.routes";
+
+const app = express();
+
+/** Nginx / Traefik arkasında doğru IP (geo / log için) */
+if (process.env.TRUST_PROXY === "1" || process.env.TRUST_PROXY === "true") {
+  app.set("trust proxy", 1);
+}
+
+function corsOrigins(): string[] {
+  const raw = process.env.CORS_ORIGINS?.trim();
+  if (raw) {
+    return raw.split(/[,;\s]+/).map(s => s.trim()).filter(Boolean);
+  }
+  return ["http://localhost:3000", "http://localhost:3001"];
+}
+
+app.use(
+  cors({
+    origin: corsOrigins(),
+    credentials: true,
+  }),
+);
+app.use(express.json());
+
+ensureUploadsDir();
+
+app.use(
+  "/uploads",
+  express.static(getUploadsDir(), {
+    maxAge: "7d",
+  }),
+);
+
+app.get("/health", (_req, res) => res.json({ ok: true }));
+
+app.use("/api/auth", authRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/posts", postRouter);
+app.use("/api/projects", projectRouter);
+app.use("/api/upload", uploadRouter);
+app.use("/api/contact", contactRouter);
+
+app.use((_req, res) => res.status(404).json({ message: "not found" }));
+app.use(errorMiddleware);
+
+const port = process.env.PORT ? Number(process.env.PORT) : 4000;
+app.listen(port, () => {
+  console.log("");
+  console.log(`[server] API çalışıyor: http://localhost:${port}`);
+  console.log(
+    `[server] Bu normal: bundan sonra satır gelmez — sunucu istek bekliyor (pencereyi kapatma).`,
+  );
+  console.log(
+    `[server] Site: Next.js genelde http://localhost:3000 (doluysa 3001). CORS’da 3000+3001 açık.`,
+  );
+  console.log(`[server] "lock" hatası: kökte npm run fix:next-lock → sonra npm run dev`);
+  console.log("");
+});
+
