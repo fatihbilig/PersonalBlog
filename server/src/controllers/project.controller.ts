@@ -59,12 +59,74 @@ export async function getProjectById(req: Request, res: Response) {
   return res.status(200).json(toProjectDto(project));
 }
 
-export async function getAllProjects(_req: Request, res: Response) {
-  const projects = await prisma.project.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+function firstQueryString(v: unknown): string | undefined {
+  if (typeof v === "string") return v;
+  if (Array.isArray(v) && typeof v[0] === "string") return v[0];
+  return undefined;
+}
 
-  return res.status(200).json(projects.map(toProjectDto));
+function parsePageSize(raw: unknown, fallback: number): number {
+  const s = firstQueryString(raw);
+  const n = s !== undefined ? parseInt(s, 10) : NaN;
+  if (!Number.isFinite(n) || n < 1) return fallback;
+  return Math.min(n, 50);
+}
+
+function parsePageIndex(raw: unknown): number {
+  const s = firstQueryString(raw);
+  const n = s !== undefined ? parseInt(s, 10) : NaN;
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(n, 10_000);
+}
+
+export async function getAllProjects(req: Request, res: Response) {
+  const rawSearch = req.query.search;
+  const search = (firstQueryString(rawSearch) ?? "").trim();
+
+  const rawPage = req.query.page;
+  const wantsPagination =
+    firstQueryString(rawPage) !== undefined && firstQueryString(rawPage) !== "";
+
+  const where = search
+    ? {
+        OR: [
+          { title: { contains: search } },
+          { description: { contains: search } },
+          { techStack: { contains: search } },
+        ],
+      }
+    : {};
+
+  if (!wantsPagination) {
+    const projects = await prisma.project.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
+    return res.status(200).json(projects.map(toProjectDto));
+  }
+
+  const page = parsePageIndex(rawPage);
+  const pageSize = parsePageSize(req.query.pageSize ?? req.query.limit, 9);
+
+  const [total, rows] = await prisma.$transaction([
+    prisma.project.count({ where }),
+    prisma.project.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+  ]);
+
+  const totalPages = total === 0 ? 1 : Math.ceil(total / pageSize);
+
+  return res.status(200).json({
+    projects: rows.map(toProjectDto),
+    total,
+    page,
+    pageSize,
+    totalPages,
+  });
 }
 
 export async function createProject(req: Request, res: Response) {

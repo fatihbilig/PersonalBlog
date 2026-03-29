@@ -80,23 +80,83 @@ function formatPost(p: RawPost) {
   };
 }
 
+function firstQueryString(v: unknown): string | undefined {
+  if (typeof v === "string") return v;
+  if (Array.isArray(v) && typeof v[0] === "string") return v[0];
+  return undefined;
+}
+
+function parsePageSize(raw: unknown, fallback: number): number {
+  const s = firstQueryString(raw);
+  const n = s !== undefined ? parseInt(s, 10) : NaN;
+  if (!Number.isFinite(n) || n < 1) return fallback;
+  return Math.min(n, 50);
+}
+
+function parsePageIndex(raw: unknown): number {
+  const s = firstQueryString(raw);
+  const n = s !== undefined ? parseInt(s, 10) : NaN;
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(n, 10_000);
+}
+
 export async function getAllPosts(req: Request, res: Response) {
   const rawCategory = req.query.category;
-  const category =
-    typeof rawCategory === "string" ? parseCategory(rawCategory) : undefined;
+  const catStr = firstQueryString(rawCategory);
+  const category = catStr ? parseCategory(catStr) : undefined;
 
   const rawSearch = req.query.search;
-  const search = typeof rawSearch === "string" ? rawSearch.trim() : "";
+  const search = (firstQueryString(rawSearch) ?? "").trim();
 
-  const posts = await prisma.post.findMany({
-    where: {
-      ...(category ? { category: categoryToDatabase(category) } : {}),
-      ...(search ? { title: { contains: search } } : {}),
-    },
-    orderBy: { createdAt: "desc" },
+  const rawPage = req.query.page;
+  const wantsPagination =
+    firstQueryString(rawPage) !== undefined && firstQueryString(rawPage) !== "";
+
+  const where = {
+    ...(category ? { category: categoryToDatabase(category) } : {}),
+    ...(search
+      ? {
+          OR: [
+            { title: { contains: search } },
+            { excerpt: { contains: search } },
+          ],
+        }
+      : {}),
+  };
+
+  if (!wantsPagination) {
+    const posts = await prisma.post.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
+    return res.json(posts.map(formatPost));
+  }
+
+  const page = parsePageIndex(rawPage);
+  const pageSize = parsePageSize(
+    req.query.pageSize ?? req.query.limit,
+    9,
+  );
+
+  const [total, rows] = await prisma.$transaction([
+    prisma.post.count({ where }),
+    prisma.post.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+  ]);
+
+  const totalPages = total === 0 ? 1 : Math.ceil(total / pageSize);
+
+  return res.json({
+    posts: rows.map(formatPost),
+    total,
+    page,
+    pageSize,
+    totalPages,
   });
-
-  return res.json(posts.map(formatPost));
 }
 
 /** Düzenleme sayfası için: GET /api/posts/by-id/:id (/:slug ile karışmaz) */

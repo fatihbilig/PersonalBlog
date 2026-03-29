@@ -9,11 +9,12 @@ const lock = path.join(__dirname, "..", "client", ".next", "dev", "lock");
 try {
   if (fs.existsSync(lock)) {
     fs.rmSync(lock, { force: true });
-    console.log("[fix] Silindi:", lock);
-  } else {
-    console.log("[fix] Kilit dosyası yok (sorun değil):", lock);
+    console.log("[fix:next-lock] Eski Next.js kilit dosyası kaldırıldı.");
   }
 } catch (e) {
-  console.error("[fix] Hata:", e.message);
-  process.exit(1);
+  // OneDrive / antivirüs kilidi vb. tüm `npm run dev`i düşürmemeli
+  console.warn("[fix:next-lock] Kilit kaldırılamadı:", e.message);
+  console.warn(
+    "[fix:next-lock] Gerekirse kapatın: çalışan `next dev`, sonra client/.next/dev/lock dosyasını silin.",
+  );
 }

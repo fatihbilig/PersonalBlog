@@ -1,61 +1,171 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, ThumbsUp, User } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { MessageCircle, Send, User } from "lucide-react";
+import {
+  getComments,
+  reactToPostComment,
+  submitComment,
+  type PostComment,
+  type ReactionKind,
+} from "@/lib/api";
 
-interface Comment {
-  id: string;
-  name: string;
-  text: string;
-  date: string;
-  likes: number;
+const REACTIONS: { kind: ReactionKind; emoji: string; label: string }[] = [
+  { kind: "THUMB", emoji: "👍", label: "Beğeni" },
+  { kind: "BULB", emoji: "💡", label: "Fikir" },
+  { kind: "HEART", emoji: "❤️", label: "Sevgi" },
+];
+
+function formatCommentDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("tr-TR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
+function formatReplyDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleString("tr-TR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+}
+
+function reactionStorageKey(postSlug: string) {
+  return `comment-reactions-v2-${postSlug}`;
+}
+
+function readReactionMap(postSlug: string): Record<string, ReactionKind> {
+  try {
+    const raw = window.localStorage.getItem(reactionStorageKey(postSlug));
+    if (!raw) return {};
+    const o = JSON.parse(raw) as unknown;
+    if (!o || typeof o !== "object") return {};
+    const out: Record<string, ReactionKind> = {};
+    for (const [k, v] of Object.entries(o)) {
+      if (v === "THUMB" || v === "BULB" || v === "HEART") out[k] = v;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function writeReactionMap(postSlug: string, map: Record<string, ReactionKind>) {
+  try {
+    window.localStorage.setItem(reactionStorageKey(postSlug), JSON.stringify(map));
+  } catch {
+    /* ignore */
+  }
 }
 
 export default function CommentSection({ postSlug }: { postSlug: string }) {
-  const key = `comments-${postSlug}`;
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [name, setName]   = useState("");
-  const [text, setText]   = useState("");
+  const [comments, setComments] = useState<PostComment[]>([]);
+  const [reactionMap, setReactionMap] = useState<Record<string, ReactionKind>>({});
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadingList, setLoadingList] = useState(true);
+  const [name, setName] = useState("");
+  const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
-  const [sent, setSent]   = useState(false);
-  const textRef = useRef<HTMLTextAreaElement>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
+  const [reactingId, setReactingId] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    setLoadError(null);
+    setLoadingList(true);
+    try {
+      const list = await getComments(postSlug);
+      setComments(list);
+    } catch {
+      setLoadError(
+        "Yorumlar yüklenemedi. API ve veritabanını kontrol et (Comment: reaction + yazar yanıtı sütunları).",
+      );
+      setComments([]);
+    } finally {
+      setLoadingList(false);
+    }
+  }, [postSlug]);
 
   useEffect(() => {
-    queueMicrotask(() => {
-      try {
-        const stored = localStorage.getItem(key);
-        if (stored) setComments(JSON.parse(stored) as Comment[]);
-      } catch {
-        /* ignore */
-      }
-    });
-  }, [key]);
+    setReactionMap(readReactionMap(postSlug));
+  }, [postSlug]);
 
-  function save(list: Comment[]) {
-    setComments(list);
-    try { localStorage.setItem(key, JSON.stringify(list)); } catch {}
-  }
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
-  function submit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !text.trim()) return;
+    setSendError(null);
     setSending(true);
-    setTimeout(() => {
-      const newComment: Comment = {
-        id: Date.now().toString(),
+    try {
+      const created = await submitComment(postSlug, {
         name: name.trim(),
         text: text.trim(),
-        date: new Date().toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" }),
-        likes: 0,
-      };
-      save([...comments, newComment]);
-      setName(""); setText(""); setSending(false); setSent(true);
+      });
+      setComments(prev => [...prev, created]);
+      setName("");
+      setText("");
+      setSent(true);
       setTimeout(() => setSent(false), 2500);
-    }, 600);
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "Gönderilemedi.");
+    } finally {
+      setSending(false);
+    }
   }
 
-  function like(id: string) {
-    save(comments.map(c => c.id === id ? { ...c, likes: c.likes + 1 } : c));
+  async function onReact(commentId: string, type: ReactionKind) {
+    if (reactingId) return;
+    const prev = reactionMap[commentId];
+    setReactingId(commentId);
+    try {
+      const updated = await reactToPostComment(
+        postSlug,
+        commentId,
+        prev !== undefined ? { type, previousType: prev } : { type },
+      );
+      const nextMap = { ...reactionMap };
+      if (prev === type) {
+        delete nextMap[commentId];
+      } else {
+        nextMap[commentId] = type;
+      }
+      setReactionMap(nextMap);
+      writeReactionMap(postSlug, nextMap);
+      setComments(prev =>
+        prev.map(c => (c.id === commentId ? updated : c)),
+      );
+    } catch {
+      /* sessiz */
+    } finally {
+      setReactingId(null);
+    }
+  }
+
+  function reactionCount(c: PostComment, kind: ReactionKind): number {
+    const r = c.reactions;
+    if (!r) return 0;
+    if (kind === "THUMB") return r.thumb ?? 0;
+    if (kind === "BULB") return r.bulb ?? 0;
+    return r.heart ?? 0;
   }
 
   const inp = `w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20`;
@@ -68,7 +178,7 @@ export default function CommentSection({ postSlug }: { postSlug: string }) {
         <MessageCircle className="h-5 w-5 text-indigo-400" />
         <h2 className="text-base font-bold" style={{ color: "rgb(var(--t1))" }}>
           Yorumlar
-          {comments.length > 0 && (
+          {!loadingList && comments.length > 0 && (
             <span className="ml-2 rounded-full bg-indigo-500/15 px-2 py-0.5 text-xs text-indigo-300">
               {comments.length}
             </span>
@@ -76,42 +186,92 @@ export default function CommentSection({ postSlug }: { postSlug: string }) {
         </h2>
       </div>
 
-      {/* Comment list */}
+      {loadError && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          {loadError}
+        </div>
+      )}
+
       <div className="space-y-4">
-        {comments.length === 0 ? (
+        {loadingList ? (
+          <div className="rounded-2xl border border-dashed p-6 text-center text-sm"
+            style={{ borderColor: "rgb(var(--surface2))", color: "rgb(var(--t3))" }}>
+            Yorumlar yükleniyor…
+          </div>
+        ) : comments.length === 0 ? (
           <div className="rounded-2xl border border-dashed p-6 text-center text-sm"
             style={{ borderColor: "rgb(var(--surface2))", color: "rgb(var(--t3))" }}>
             Henüz yorum yok. İlk yorumu sen yap! 🎉
           </div>
         ) : (
           comments.map(c => (
-            <div key={c.id} className="flex gap-3 group">
-              <div className="h-9 w-9 shrink-0 rounded-full bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/30 flex items-center justify-center">
-                <User className="h-4 w-4 text-indigo-300" />
-              </div>
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold" style={{ color: "rgb(var(--t1))" }}>{c.name}</span>
-                  <span className="text-[11px]" style={{ color: "rgb(var(--t3))" }}>{c.date}</span>
+            <div key={c.id} className="space-y-3">
+              <div className="flex gap-3">
+                <div className="h-9 w-9 shrink-0 rounded-full bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/30 flex items-center justify-center">
+                  <User className="h-4 w-4 text-indigo-300" />
                 </div>
-                <p className="text-sm leading-6" style={{ color: "rgb(var(--t2))" }}>{c.text}</p>
-                <button
-                  type="button"
-                  onClick={() => like(c.id)}
-                  className="inline-flex items-center gap-1.5 text-xs transition hover:text-indigo-400"
-                  style={{ color: "rgb(var(--t3))" }}
-                >
-                  <ThumbsUp className="h-3.5 w-3.5" />
-                  {c.likes > 0 ? c.likes : "Beğen"}
-                </button>
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-bold" style={{ color: "rgb(var(--t1))" }}>{c.name}</span>
+                    <span className="text-[11px]" style={{ color: "rgb(var(--t3))" }}>
+                      {formatCommentDate(c.createdAt)}
+                    </span>
+                  </div>
+                  <p className="text-sm leading-6" style={{ color: "rgb(var(--t2))" }}>{c.text}</p>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {REACTIONS.map(({ kind, emoji, label }) => {
+                      const active = reactionMap[c.id] === kind;
+                      const n = reactionCount(c, kind);
+                      const busy = reactingId === c.id;
+                      return (
+                        <button
+                          key={kind}
+                          type="button"
+                          disabled={busy}
+                          title={label}
+                          onClick={() => void onReact(c.id, kind)}
+                          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition disabled:opacity-50 ${
+                            active
+                              ? "border-indigo-500/50 bg-indigo-500/15 text-indigo-200"
+                              : "border-transparent bg-slate-800/50 text-slate-300 hover:bg-slate-800"
+                          }`}
+                          style={!active ? { borderColor: "rgb(var(--surface2))" } : undefined}
+                        >
+                          <span className="text-base leading-none">{emoji}</span>
+                          <span>{n > 0 ? n : ""}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
+
+              {c.authorReply?.trim() && (
+                <div
+                  className="ml-0 rounded-2xl border border-indigo-500/25 bg-indigo-500/5 px-4 py-3 sm:ml-12"
+                  style={{ borderColor: "rgba(99,102,241,0.25)" }}
+                >
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-indigo-400">
+                      Yazar yanıtı
+                    </span>
+                    {c.authorRepliedAt && (
+                      <span className="text-[10px]" style={{ color: "rgb(var(--t3))" }}>
+                        {formatReplyDate(c.authorRepliedAt)}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "rgb(var(--t2))" }}>
+                    {c.authorReply}
+                  </p>
+                </div>
+              )}
             </div>
           ))
         )}
       </div>
 
-      {/* Form */}
-      <form onSubmit={submit} className="space-y-3 border-t pt-5"
+      <form onSubmit={e => void onSubmit(e)} className="space-y-3 border-t pt-5"
         style={{ borderColor: "rgb(var(--surface2))" }}>
         <div className="text-xs font-semibold" style={{ color: "rgb(var(--t3))" }}>
           Yorum yap
@@ -125,7 +285,6 @@ export default function CommentSection({ postSlug }: { postSlug: string }) {
           required
         />
         <textarea
-          ref={textRef}
           value={text}
           onChange={e => setText(e.target.value)}
           className={`${inp} min-h-24 resize-none`}
@@ -133,14 +292,19 @@ export default function CommentSection({ postSlug }: { postSlug: string }) {
           placeholder="Düşüncelerini paylaş…"
           required
         />
+        {sendError && (
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-300">
+            {sendError}
+          </div>
+        )}
         {sent && (
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
-            ✅ Yorumun eklendi!
+            ✅ Yorumun kaydedildi!
           </div>
         )}
         <button
           type="submit"
-          disabled={sending}
+          disabled={sending || loadingList}
           className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:brightness-110 disabled:opacity-60"
         >
           <Send className="h-4 w-4" />

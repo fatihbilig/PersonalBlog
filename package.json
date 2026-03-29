@@ -4,7 +4,10 @@
   "scripts": {
     "setup": "npm install && npm install --prefix server && npm install --prefix client",
     "fix:next-lock": "node scripts/clear-next-dev-lock.cjs",
-    "dev": "concurrently -n server,client -c blue,green \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "predev": "npm run fix:next-lock",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "dev": "concurrently -n server,client -c blue,green npm:dev:server npm:dev:client",
     "build": "npm --prefix server run build && npm --prefix client run build",
     "start": "npm --prefix server run start",
     "seed": "npm --prefix server run seed"

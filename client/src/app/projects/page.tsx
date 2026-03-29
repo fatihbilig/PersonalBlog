@@ -1,12 +1,35 @@
-import { getProjectsCached } from "@/lib/server-data";
-import ProjectCard from "@/components/ProjectCard";
+import type { Metadata } from "next";
+import { getProjectsPagedForRsc } from "@/lib/api";
+import { PROJECT_PAGE_SIZE, parseProjectSearchParams } from "@/lib/projectQuery";
+import ProjectsListing from "@/components/ProjectsListing";
 import Reveal from "@/components/Reveal";
 import SectionTitle from "@/components/SectionTitle";
 
-export const metadata = { title: "Projeler | Fatih" };
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  const { sayfa } = parseProjectSearchParams(sp);
+  if (sayfa > 1) return { title: `Projeler (sayfa ${sayfa}) | Fatih` };
+  return { title: "Projeler | Fatih" };
+}
 
-export default async function ProjectsPage() {
-  const projects = await getProjectsCached();
+export default async function ProjectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const { sayfa, ara } = parseProjectSearchParams(sp);
+
+  const { projects, total, page, totalPages } = await getProjectsPagedForRsc({
+    page: sayfa,
+    pageSize: PROJECT_PAGE_SIZE,
+    search: ara || undefined,
+  });
+
   return (
     <div className="space-y-10">
       <header className="space-y-3">
@@ -20,31 +43,29 @@ export default async function ProjectsPage() {
             Projeler
           </h1>
         </Reveal>
-        <Reveal delay={0.10}>
+        <Reveal delay={0.1}>
           <p className="max-w-xl text-sm leading-7" style={{ color: "rgb(var(--t3))" }}>
-           Güvenlik, Backend ve Yapay Zeka (NLP) ekseninde şekillenen mühendislik çalışmaları. Her proje; sadece bir kod yığını değil; net bir problem tanımı, stratejik bir çözüm yaklaşımı ve somut çıkarımlardan oluşan bütünsel bir süreçtir.
+            Güvenlik, Backend ve Yapay Zeka (NLP) ekseninde şekillenen mühendislik çalışmaları. Her proje; sadece bir kod yığını değil; net bir problem tanımı, stratejik bir çözüm yaklaşımı ve somut çıkarımlardan oluşan bütünsel bir süreçtir.
           </p>
         </Reveal>
       </header>
 
       <Reveal delay={0.12}>
-        <SectionTitle title="Tüm Projeler" />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <SectionTitle title="Tüm Projeler" subtitle="Ara veya sayfa seç." />
+          <span className="text-sm" style={{ color: "rgb(var(--t-muted))" }}>
+            {total} proje{ara ? " (filtreli)" : ""}
+          </span>
+        </div>
       </Reveal>
 
-      <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {projects.length ? projects.map((p, i) => (
-          <Reveal key={p.id} delay={i * 0.05}>
-            <ProjectCard project={p} />
-          </Reveal>
-        )) : (
-          <Reveal>
-            <div className="rounded-2xl border p-6 text-sm"
-              style={{ borderColor: "rgb(var(--surface2))", background: "rgb(var(--surface))", color: "rgb(var(--t3))" }}>
-              Henüz proje eklenmemiş.
-            </div>
-          </Reveal>
-        )}
-      </section>
+      <ProjectsListing
+        projects={projects}
+        total={total}
+        page={page}
+        totalPages={totalPages}
+        ara={ara}
+      />
     </div>
   );
 }

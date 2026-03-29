@@ -58,15 +58,7 @@ app.use(errorMiddleware);
 
 const port = process.env.PORT ? Number(process.env.PORT) : 4000;
 app.listen(port, () => {
-  console.log("");
-  console.log(`[server] API çalışıyor: http://localhost:${port}`);
-  console.log(
-    `[server] Bu normal: bundan sonra satır gelmez — sunucu istek bekliyor (pencereyi kapatma).`,
-  );
-  console.log(
-    `[server] Site: Next.js genelde http://localhost:3000 (doluysa 3001). CORS’da 3000+3001 açık.`,
-  );
-  console.log(`[server] "lock" hatası: kökte npm run fix:next-lock → sonra npm run dev`);
-  console.log("");
+  const origins = corsOrigins().join(", ");
+  console.log(`[server] http://localhost:${port}  (CORS: ${origins})`);
 });
 

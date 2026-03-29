@@ -89,8 +89,17 @@ export default function Navbar() {
 
         {/* ── Logo ─────────────────────────────────── */}
         <Link href="/" onClick={() => setOpen(false)} className="group flex items-center gap-3 shrink-0">
-          <div className="relative transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-            <Logo size={36} />
+          <div className="relative rounded-[14px] p-px transition-all duration-300 group-hover:scale-[1.06] group-hover:rotate-2 group-hover:shadow-lg group-hover:shadow-indigo-500/25">
+            <div
+              className="pointer-events-none absolute inset-0 rounded-[13px] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgb(129 140 248 / 0.5), rgb(167 139 250 / 0.45), rgb(52 211 153 / 0.35))",
+              }}
+            />
+            <div className="relative rounded-xl bg-transparent">
+              <Logo size={38} className="relative z-10 drop-shadow-[0_2px_8px_rgb(0_0_0/0.2)]" />
+            </div>
           </div>
           <div className="leading-tight hidden sm:block">
             <span className="block text-[15px] font-black tracking-tight" style={{ color: "rgb(var(--t1))" }}>

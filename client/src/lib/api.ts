@@ -153,11 +153,60 @@ export async function getPostsForRsc(): Promise<Post[]> {
   return await safeJson<Post[]>(res);
 }
 
+export type PostsPaged = {
+  posts: Post[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
+/** `page` verildiğinde API sayfalı JSON döner; liste + öne çıkan için ayrı çağrılar kullanılır */
+export async function getPostsPagedForRsc(params: {
+  page: number;
+  pageSize?: number;
+  category?: PostCategory;
+  search?: string;
+}): Promise<PostsPaged> {
+  const sp = new URLSearchParams();
+  sp.set("page", String(params.page));
+  sp.set("pageSize", String(params.pageSize ?? 9));
+  if (params.category) sp.set("category", params.category);
+  if (params.search?.trim()) sp.set("search", params.search.trim());
+  const res = await fetch(`${API_BASE}/posts?${sp.toString()}`, {
+    next: { revalidate: RSC_REVALIDATE_LIST },
+  });
+  return await safeJson<PostsPaged>(res);
+}
+
 export async function getProjectsForRsc(): Promise<Project[]> {
   const res = await fetch(`${API_BASE}/projects`, {
     next: { revalidate: RSC_REVALIDATE_LIST },
   });
   return await safeJson<Project[]>(res);
+}
+
+export type ProjectsPaged = {
+  projects: Project[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
+export async function getProjectsPagedForRsc(params: {
+  page: number;
+  pageSize?: number;
+  search?: string;
+}): Promise<ProjectsPaged> {
+  const sp = new URLSearchParams();
+  sp.set("page", String(params.page));
+  sp.set("pageSize", String(params.pageSize ?? 9));
+  if (params.search?.trim()) sp.set("search", params.search.trim());
+  const res = await fetch(`${API_BASE}/projects?${sp.toString()}`, {
+    next: { revalidate: RSC_REVALIDATE_LIST },
+  });
+  return await safeJson<ProjectsPaged>(res);
 }
 
 export async function getPostBySlugForRsc(slug: string): Promise<Post> {
@@ -332,6 +381,130 @@ export async function registerView(slug: string): Promise<void> {
     method: "POST",
     cache: "no-store",
   });
+}
+
+export type CommentReactions = {
+  thumb: number;
+  bulb: number;
+  heart: number;
+};
+
+export type ReactionKind = "THUMB" | "BULB" | "HEART";
+
+export type PostComment = {
+  id: string;
+  name: string;
+  text: string;
+  reactions: CommentReactions;
+  authorReply: string | null;
+  authorRepliedAt: string | null;
+  createdAt: string;
+};
+
+export async function getComments(slug: string): Promise<PostComment[]> {
+  const res = await fetch(
+    `${API_BASE}/posts/${encodeURIComponent(slug)}/comments`,
+    { cache: "no-store" },
+  );
+  return await safeJson<PostComment[]>(res);
+}
+
+export async function submitComment(
+  slug: string,
+  body: { name: string; text: string },
+): Promise<PostComment> {
+  const res = await fetch(
+    `${API_BASE}/posts/${encodeURIComponent(slug)}/comments`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: body.name, text: body.text }),
+      cache: "no-store",
+    },
+  );
+  if (!res.ok) {
+    throw new Error(
+      await readApiErrorMessage(res, `Yorum gönderilemedi (${res.status})`),
+    );
+  }
+  return (await res.json()) as PostComment;
+}
+
+export async function reactToPostComment(
+  slug: string,
+  commentId: string,
+  body: { type: ReactionKind; previousType?: ReactionKind | null },
+): Promise<PostComment> {
+  const res = await fetch(
+    `${API_BASE}/posts/${encodeURIComponent(slug)}/comments/${encodeURIComponent(commentId)}/react`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: body.type,
+        ...(body.previousType !== undefined && body.previousType !== null
+          ? { previousType: body.previousType }
+          : {}),
+      }),
+      cache: "no-store",
+    },
+  );
+  if (!res.ok) {
+    throw new Error(
+      await readApiErrorMessage(res, `Reaksiyon kaydedilemedi (${res.status})`),
+    );
+  }
+  return (await res.json()) as PostComment;
+}
+
+export type AdminComment = {
+  id: string;
+  authorName: string;
+  body: string;
+  reactions: CommentReactions;
+  authorReply: string | null;
+  authorRepliedAt: string | null;
+  createdAt: string;
+  postId: string;
+  postTitle: string;
+  postSlug: string;
+};
+
+export async function getAdminComments(): Promise<AdminComment[]> {
+  const res = await authedFetch(`${API_BASE}/admin/comments`);
+  return await safeJson<AdminComment[]>(res);
+}
+
+export async function deleteAdminComment(id: string): Promise<void> {
+  const res = await authedFetch(
+    `${API_BASE}/admin/comments/${encodeURIComponent(id)}`,
+    { method: "DELETE" },
+  );
+  if (!res.ok) {
+    throw new Error(
+      await readApiErrorMessage(res, `Yorum silinemedi (${res.status})`),
+    );
+  }
+}
+
+export async function patchAdminCommentReply(
+  id: string,
+  authorReply: string,
+): Promise<AdminComment> {
+  const res = await authedFetch(
+    `${API_BASE}/admin/comments/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ authorReply }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(
+      await readApiErrorMessage(res, `Yanıt kaydedilemedi (${res.status})`),
+    );
+  }
+  return (await res.json()) as AdminComment;
 }
 
 export async function getAdminStats(): Promise<AdminStats> {

@@ -1,5 +1,10 @@
 import { Router } from "express";
 import {
+  createCommentForPost,
+  getCommentsForPost,
+  reactToComment,
+} from "../controllers/comment.controller";
+import {
   createPost,
   deletePost,
   getAllPosts,
@@ -19,4 +24,7 @@ postRouter.post("/", authMiddleware, createPost);
 postRouter.patch("/:id", authMiddleware, updatePost);
 postRouter.delete("/:id", authMiddleware, deletePost);
 postRouter.post("/:slug/view", registerPostView);
+postRouter.get("/:slug/comments", getCommentsForPost);
+postRouter.post("/:slug/comments", createCommentForPost);
+postRouter.post("/:slug/comments/:commentId/react", reactToComment);
 postRouter.get("/:slug", getPostBySlug);

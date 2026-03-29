@@ -50,7 +50,7 @@ export default function AboutPage() {
                 </div>
                 <h1 className="text-4xl font-black" style={{ color: "rgb(var(--t1))" }}>Fatih Bilici</h1>
                 <p className="text-base font-semibold" style={{ color: "rgb(var(--t3))" }}>
-                  Bilgisayar Mühendisliği Son Sınıf · Backend Developer · NLP Researcher
+                  Bilgisayar Mühendisliği Son Sınıf · Backend Developer 
                 </p>
                 <div className="flex flex-wrap justify-center gap-4 text-sm sm:justify-start" style={{ color: "rgb(var(--t3))" }}>
                   <span className="flex items-center gap-1.5"><Mail className="h-4 w-4 shrink-0 text-indigo-400" />fatihbilig@gmail.com</span>
@@ -61,7 +61,8 @@ export default function AboutPage() {
               </div>
             </div>
             <a
-              href="#"
+              href="/Fatih-Bilici-CV.pdf"
+              download="Fatih-Bilici-CV.pdf"
               className="inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:brightness-110 whitespace-nowrap lg:self-start"
             >
               <Download className="h-4 w-4" />CV İndir

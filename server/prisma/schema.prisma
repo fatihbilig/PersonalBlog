@@ -18,6 +18,25 @@ model Post {
   createdAt DateTime @default(now())
 
   visitorLogs VisitorLog[]
+  comments    Comment[]
+}
+
+model Comment {
+  id              Int       @id @default(autoincrement())
+  authorName      String    @db.VarChar(191)
+  body            String    @db.Text
+  reactionThumb   Int       @default(0)
+  reactionBulb    Int       @default(0)
+  reactionHeart   Int       @default(0)
+  authorReply     String?   @db.Text
+  authorRepliedAt DateTime?
+  createdAt       DateTime  @default(now())
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+
+  @@index([postId])
+  @@index([createdAt])
 }
 
 model Project {

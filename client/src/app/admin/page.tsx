@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
-  BookOpen, Eye, FolderGit2, Pencil, Plus, RefreshCw, Trash2,
+  BookOpen, Eye, FolderGit2, MessageCircle, Pencil, Plus, RefreshCw, Trash2,
 } from "lucide-react";
 import {
   deletePost, deleteProject, getAdminStats, getPosts, getProjects,
@@ -93,7 +93,11 @@ export default function AdminPage() {
           <h1 className="mt-2 text-2xl font-black" style={{ color: "rgb(var(--t1))" }}>Admin Dashboard</h1>
           <p className="mt-1 text-sm" style={{ color: "rgb(var(--t3))" }}>İçerik yönetimi, istatistikler ve analitik.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/comments"
+            className="inline-flex items-center gap-2 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2 text-sm font-semibold text-violet-300 transition hover:bg-violet-500/20">
+            <MessageCircle className="h-4 w-4" />Yorumlar
+          </Link>
           <button type="button" onClick={() => void refresh()}
             className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition hover:bg-slate-700"
             style={{ borderColor: "rgb(var(--surface2))", background: "rgb(var(--surface))", color: "rgb(var(--t2))" }}>
