@@ -1,4 +1,8 @@
-# Nixpacks varsayılan nodejs_22 sürümü (ör. 22.11) Prisma 7.6+ ile uyumsuz;
-# Prisma: 20.19+, 22.12+ veya 24+. Burada Node 20 kanalı kullanılıyor (genelde ≥20.19).
+# Nixpacks varsayılan nodejs_22 (22.11) Prisma 7.6+ ile uyumsuz. [variables] tek başına
+# bazen setup'a yansımaz; nixPkgs ile nodejs_20 zorunlu kılınır.
+# Railway'de builder = NIXPACKS kullanıyorsan bu blok gerekli. Dockerfile tercih edilirse bkz. railway.toml.
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x", "openssl"]
+
 [variables]
 NIXPACKS_NODE_VERSION = "20"

@@ -1,8 +1,8 @@
-# Railway: Root Directory = server olarak ayarla (veya bu dosyayı kullan)
+# Railway: servis kök dizini "server" olmalı.
+# builder = NIXPACKS iken Nixpacks nodejs_22 (22.11) Prisma 7.6+ ile kırılıyordu; Dockerfile Node 20 kullanır.
 [build]
-builder = "NIXPACKS"
-# Nixpacks zaten install aşamasında npm ci çalıştırır; burada yalnızca build yeterli.
-buildCommand = "npm run build"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "node dist/index.js"
