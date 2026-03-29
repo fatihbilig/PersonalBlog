@@ -1,5 +1,5 @@
-# Prisma 7.6+ Nixpacks'in nodejs_22 (22.11) sürümünü reddeder; resmi Node 20 LTS kullanılır.
-FROM node:20-bookworm-slim
+# Prisma 7.6+: Node 20.19+ veya 22.12+ veya 24+. Resmi 22.x imajı (≥22.12) Nixpacks'teki 20.18 / 22.11 tuzağından kaçınır.
+FROM node:22-bookworm-slim
 WORKDIR /app
 
 COPY . .

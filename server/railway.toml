@@ -1,5 +1,5 @@
-# Railway: servis kök dizini "server" olmalı.
-# builder = NIXPACKS iken Nixpacks nodejs_22 (22.11) Prisma 7.6+ ile kırılıyordu; Dockerfile Node 20 kullanır.
+# ÖNEMLİ: Railway'de bu servisin "Root Directory" değeri mutlaka "server" olmalı (depo kökü değil).
+# Kök dizin yanlışsa bu dosya okunmaz; Nixpacks eski Node (20.18 / 22.11) ile kalır ve Prisma build'i düşer.
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"

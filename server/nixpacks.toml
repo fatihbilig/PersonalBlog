@@ -1,8 +1,9 @@
-# Nixpacks varsayılan nodejs_22 (22.11) Prisma 7.6+ ile uyumsuz. [variables] tek başına
-# bazen setup'a yansımaz; nixPkgs ile nodejs_20 zorunlu kılınır.
-# Railway'de builder = NIXPACKS kullanıyorsan bu blok gerekli. Dockerfile tercih edilirse bkz. railway.toml.
+# Eski nixpkgs: nodejs_20 = 20.18.1 (Prisma ≥20.19 reddeder), nodejs_22 = 22.11 (Prisma ≥22.12 reddeder).
+# Bu commit ile nodejs_22 ≈ 22.13+ olur (Prisma ve @prisma/streams-local Node ≥22 uyarıları uyumlu).
+# Kaynak: Nixpacks / Coolify örnekleri — https://nixpacks.com/docs/configuration/file
 [phases.setup]
-nixPkgs = ["nodejs_20", "npm-9_x", "openssl"]
+nixpkgsArchive = "51ad838b03a05b1de6f9f2a0fffecee64a9788ee"
+nixPkgs = ["nodejs_22", "npm-9_x", "openssl"]
 
 [variables]
-NIXPACKS_NODE_VERSION = "20"
+NIXPACKS_NODE_VERSION = "22"
