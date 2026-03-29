@@ -5,6 +5,20 @@ type ErrorBody = {
   message: string;
 };
 
+function isPrismaKnownRequestError(
+  err: unknown,
+): err is Prisma.PrismaClientKnownRequestError {
+  return err instanceof Prisma.PrismaClientKnownRequestError;
+}
+
+function isPrismaInitError(err: unknown): err is Prisma.PrismaClientInitializationError {
+  return err instanceof Prisma.PrismaClientInitializationError;
+}
+
+function isPrismaRustPanicError(err: unknown): err is Prisma.PrismaClientRustPanicError {
+  return err instanceof Prisma.PrismaClientRustPanicError;
+}
+
 export function errorMiddleware(
   err: unknown,
   _req: Request,
@@ -14,7 +28,7 @@ export function errorMiddleware(
   if (res.headersSent) return;
 
   // Prisma known errors (e.g. unique constraint)
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+  if (isPrismaKnownRequestError(err)) {
     if (err.code === "P2002") {
       return res.status(409).json({ message: "unique constraint failed" } satisfies ErrorBody);
     }
@@ -22,10 +36,10 @@ export function errorMiddleware(
   }
 
   // Prisma init / connectivity errors
-  if (err instanceof Prisma.PrismaClientInitializationError) {
+  if (isPrismaInitError(err)) {
     return res.status(500).json({ message: "database initialization error" } satisfies ErrorBody);
   }
-  if (err instanceof Prisma.PrismaClientRustPanicError) {
+  if (isPrismaRustPanicError(err)) {
     return res.status(500).json({ message: "database panic error" } satisfies ErrorBody);
   }
 

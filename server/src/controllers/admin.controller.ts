@@ -1,5 +1,10 @@
 import type { Request, Response } from "express";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+
+type AdminCommentRow = Prisma.CommentGetPayload<{
+  include: { post: { select: { id: true; title: true; slug: true } } };
+}>;
 
 export async function getAdminStats(_req: Request, res: Response) {
   const [postCount, projectCount] = await Promise.all([
@@ -32,7 +37,7 @@ export async function getAdminStats(_req: Request, res: Response) {
     topPosts,
     visitorsByCountry: countryGroups.map((g) => ({
       country: g.country ?? "Unknown",
-      count: g._count.country,
+      count: g._count?.country ?? 0,
     })),
   });
 }
@@ -47,7 +52,7 @@ export async function listAdminComments(_req: Request, res: Response) {
   });
 
   return res.json(
-    rows.map((c) => ({
+    rows.map((c: AdminCommentRow) => ({
       id: String(c.id),
       authorName: c.authorName,
       body: c.body,
