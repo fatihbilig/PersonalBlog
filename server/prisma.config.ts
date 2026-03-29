@@ -1,14 +1,12 @@
 import "dotenv/config";
 import { defineConfig } from "@prisma/config";
+import { getDatabaseUrlForPrismaConfig } from "./src/lib/database-url";
 
 /**
- * Prisma 7: bağlantı adresi şemada değil, burada.
- * Generate sırasında DATABASE_URL yoksa geçerli biçimde placeholder kullanılır (client üretimi);
- * migrate / runtime için gerçek .env veya Railway değişkeni şarttır.
+ * Prisma 7: datasource URL lives here, not in schema.
+ * Uses DATABASE_URL, MYSQL_URL, or split MYSQL* vars; falls back to placeholder for generate only.
  */
-const databaseUrl =
-  process.env.DATABASE_URL?.trim() ||
-  "mysql://127.0.0.1:3306/prisma_placeholder";
+const databaseUrl = getDatabaseUrlForPrismaConfig();
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
