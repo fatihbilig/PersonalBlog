@@ -1,0 +1,4 @@
+# Nixpacks varsayılan nodejs_22 sürümü (ör. 22.11) Prisma 7.6+ ile uyumsuz;
+# Prisma: 20.19+, 22.12+ veya 24+. Burada Node 20 kanalı kullanılıyor (genelde ≥20.19).
+[variables]
+NIXPACKS_NODE_VERSION = "20"

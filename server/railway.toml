@@ -1,7 +1,8 @@
 # Railway: Root Directory = server olarak ayarla (veya bu dosyayı kullan)
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm ci && npm run build"
+# Nixpacks zaten install aşamasında npm ci çalıştırır; burada yalnızca build yeterli.
+buildCommand = "npm run build"
 
 [deploy]
 startCommand = "node dist/index.js"
