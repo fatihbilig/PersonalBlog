@@ -11,11 +11,11 @@ export async function sendContactMail(req: Request, res: Response) {
 
   const n = name?.trim();
   const e = email?.trim();
-  const s = subject?.trim();
+  const s = subject?.trim() || "Web Sitesi İletişim Formu";
   const m = message?.trim();
 
-  if (!n || !e || !s || !m) {
-    return res.status(400).json({ message: "name, email, subject, message are required" });
+  if (!n || !e || !m) {
+    return res.status(400).json({ message: "name, email and message are required" });
   }
 
   const to = process.env.CONTACT_TO_EMAIL;

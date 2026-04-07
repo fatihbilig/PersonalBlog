@@ -3,11 +3,11 @@ import bcrypt from "bcrypt";
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
-  const username = (process.env.ADMIN_USERNAME ?? "fatih").trim();
-  const plainPassword = (process.env.ADMIN_PASSWORD ?? "fatih123").trim();
+  const username = process.env.ADMIN_USERNAME?.trim();
+  const plainPassword = process.env.ADMIN_PASSWORD?.trim();
 
   if (!username || !plainPassword) {
-    throw new Error("ADMIN_USERNAME and ADMIN_PASSWORD must be set (or use defaults).");
+    throw new Error("ADMIN_USERNAME and ADMIN_PASSWORD must be set.");
   }
 
   try {

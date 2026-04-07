@@ -40,7 +40,7 @@ export type AdminStats = {
   visitorsByCountry: { country: string; count: number }[];
 };
 
-const API_BASE =
+export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE?.trim() || "http://localhost:4000/api";
 const TOKEN_KEY = "auth_token";
 const AUTH_EVENT_NAME = "auth-token-change";
@@ -234,6 +234,31 @@ export async function login(params: {
   if (!token) throw new Error("Login response did not include token.");
   setToken(token);
   return { token };
+}
+
+export async function submitContactForm(input: {
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
+}): Promise<void> {
+  const res = await fetch(`${API_BASE}/contact`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: input.name.trim(),
+      email: input.email.trim(),
+      subject: input.subject?.trim() || "Web Sitesi İletişim Formu",
+      message: input.message.trim(),
+    }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      await readApiErrorMessage(res, `Mesaj gönderilemedi (${res.status})`),
+    );
+  }
 }
 
 export type CreatePostInput = {
