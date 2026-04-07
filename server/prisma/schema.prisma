@@ -7,23 +7,22 @@ datasource db {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  slug      String   @unique
-  content   String   @db.Text
-  excerpt   String?
-  imageUrl  String?
-  viewCount Int      @default(0)
-  category  String @db.VarChar(32)
-  createdAt DateTime @default(now())
-
-  visitorLogs VisitorLog[]
+  id          Int          @id @default(autoincrement())
+  title       String
+  slug        String       @unique
+  content     String       @db.Text
+  excerpt     String?
+  imageUrl    String?
+  viewCount   Int          @default(0)
+  category    String       @db.VarChar(32)
+  createdAt   DateTime     @default(now())
   comments    Comment[]
+  visitorLogs VisitorLog[]
 }
 
 model Comment {
   id              Int       @id @default(autoincrement())
-  authorName      String    @db.VarChar(191)
+  authorName      String
   body            String    @db.Text
   reactionThumb   Int       @default(0)
   reactionBulb    Int       @default(0)
@@ -31,9 +30,8 @@ model Comment {
   authorReply     String?   @db.Text
   authorRepliedAt DateTime?
   createdAt       DateTime  @default(now())
-
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId Int
+  postId          Int
+  post            Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([createdAt])
@@ -62,9 +60,8 @@ model VisitorLog {
   country   String?
   userAgent String?
   createdAt DateTime @default(now())
-
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId Int
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([createdAt])
