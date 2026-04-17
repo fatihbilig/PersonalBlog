@@ -4,6 +4,7 @@ import cors from "cors";
 import express from "express";
 
 import { ensureUploadsDir, getUploadsDir } from "./lib/upload";
+import { ensureRuntimeSchema } from "./lib/runtime-schema";
 import { errorMiddleware } from "./middleware/error.middleware";
 import { authRouter } from "./routes/auth.routes";
 import { adminRouter } from "./routes/admin.routes";
@@ -59,7 +60,17 @@ app.use((_req, res) => res.status(404).json({ message: "not found" }));
 app.use(errorMiddleware);
 
 const port = process.env.PORT ? Number(process.env.PORT) : 4000;
-app.listen(port, () => {
-  const origins = corsOrigins().join(", ");
-  console.log(`[server] http://localhost:${port}  (CORS: ${origins})`);
+
+async function start() {
+  await ensureRuntimeSchema();
+
+  app.listen(port, () => {
+    const origins = corsOrigins().join(", ");
+    console.log(`[server] http://localhost:${port}  (CORS: ${origins})`);
+  });
+}
+
+start().catch(err => {
+  console.error("[server] startup failed", err);
+  process.exit(1);
 });
