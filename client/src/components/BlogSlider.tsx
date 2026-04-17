@@ -44,7 +44,7 @@ export default function BlogSlider({ posts, layout = "stack" }: BlogSliderProps)
             if (layout === "row") {
               return (
                 <div key={post.id} className="min-w-full">
-                  <Link href={`/blog/${post.slug}`}>
+                  <Link href={`/blog/${post.slug}`} prefetch={false}>
                     <div
                       className="group flex min-h-[7.5rem] overflow-hidden rounded-2xl border sm:min-h-[8rem]"
                       style={{ borderColor: "rgb(var(--surface2))", background: "rgb(var(--surface))" }}
@@ -111,7 +111,7 @@ export default function BlogSlider({ posts, layout = "stack" }: BlogSliderProps)
 
             return (
               <div key={post.id} className="min-w-full">
-                <Link href={`/blog/${post.slug}`}>
+                <Link href={`/blog/${post.slug}`} prefetch={false}>
                   <div
                     className="group relative overflow-hidden rounded-2xl border"
                     style={{ borderColor: "rgb(var(--surface2))" }}

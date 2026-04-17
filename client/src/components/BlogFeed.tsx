@@ -78,6 +78,7 @@ export default function BlogFeed({ posts, total, page, totalPages, kategori, ara
             <Link
               key={t.key}
               href={blogListHref({ sayfa: 1, kategori: t.key, ara })}
+              prefetch={false}
               scroll={false}
               className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                 kategori === t.key ? t.active : "hover:bg-slate-700/40"

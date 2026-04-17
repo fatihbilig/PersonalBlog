@@ -24,7 +24,7 @@ export default function PostCard({ post }: { post: Post }) {
   );
 
   return (
-    <Link href={`/blog/${post.slug}`} className="block h-full">
+    <Link href={`/blog/${post.slug}`} prefetch={false} className="block h-full">
       <article
         className="group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
         style={{
