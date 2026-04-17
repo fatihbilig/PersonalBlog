@@ -78,7 +78,7 @@ export default async function Home() {
                 style={{ fontSize: "clamp(1.2rem, 2.95vw + 0.5rem, 3.5rem)" }}
               >
                 <span className="inline-block bg-gradient-to-r from-indigo-400 via-violet-400 to-emerald-400 bg-clip-text text-transparent">
-                  Renkli fikirler,
+                  Hoşgeldiniz 
                 </span>
                 <span className="inline-block shrink-0" style={{ color: "rgb(var(--t1))" }}>
                   düzenli notlar.

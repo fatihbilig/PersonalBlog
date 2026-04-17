@@ -9,6 +9,7 @@ import {
   type PostComment,
   type ReactionKind,
 } from "@/lib/api";
+import { useAuthToken } from "@/lib/useAuthToken";
 
 const REACTIONS: { kind: ReactionKind; emoji: string; label: string }[] = [
   { kind: "THUMB", emoji: "👍", label: "Beğeni" },
@@ -75,6 +76,8 @@ function writeReactionMap(postSlug: string, map: Record<string, ReactionKind>) {
 }
 
 export default function CommentSection({ postSlug }: { postSlug: string }) {
+  const { token, ready } = useAuthToken();
+  const isAdminSession = Boolean(token);
   const [comments, setComments] = useState<PostComment[]>([]);
   const [reactionMap, setReactionMap] = useState<Record<string, ReactionKind>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -110,18 +113,34 @@ export default function CommentSection({ postSlug }: { postSlug: string }) {
     void refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    const onFocus = () => {
+      void refresh();
+    };
+
+    window.addEventListener("focus", onFocus);
+    const interval = window.setInterval(() => {
+      void refresh();
+    }, 30000);
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.clearInterval(interval);
+    };
+  }, [refresh]);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !text.trim()) return;
+    if ((!isAdminSession && !name.trim()) || !text.trim()) return;
     setSendError(null);
     setSending(true);
     try {
       const created = await submitComment(postSlug, {
-        name: name.trim(),
+        name: isAdminSession ? "admin" : name.trim(),
         text: text.trim(),
       });
       setComments(prev => [...prev, created]);
-      setName("");
+      if (!isAdminSession) setName("");
       setText("");
       setSent(true);
       setTimeout(() => setSent(false), 2500);
@@ -213,6 +232,11 @@ export default function CommentSection({ postSlug }: { postSlug: string }) {
                 <div className="min-w-0 flex-1 space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-bold" style={{ color: "rgb(var(--t1))" }}>{c.name}</span>
+                    {c.isAdmin && (
+                      <span className="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-300">
+                        Admin
+                      </span>
+                    )}
                     <span className="text-[11px]" style={{ color: "rgb(var(--t3))" }}>
                       {formatCommentDate(c.createdAt)}
                     </span>
@@ -276,14 +300,23 @@ export default function CommentSection({ postSlug }: { postSlug: string }) {
         <div className="text-xs font-semibold" style={{ color: "rgb(var(--t3))" }}>
           Yorum yap
         </div>
-        <input
-          value={name}
-          onChange={e => setName(e.target.value)}
-          className={inp}
-          style={inpStyle}
-          placeholder="Adın"
-          required
-        />
+        {isAdminSession ? (
+          <div
+            className="rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-sm"
+            style={{ color: "rgb(var(--t2))" }}
+          >
+            {ready ? "Bu yorumu admin olarak gönderiyorsun." : "Oturum kontrol ediliyor..."}
+          </div>
+        ) : (
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className={inp}
+            style={inpStyle}
+            placeholder="Adın"
+            required
+          />
+        )}
         <textarea
           value={text}
           onChange={e => setText(e.target.value)}

@@ -12,23 +12,23 @@ const timeline = [
 ];
 
 const skills = [
-  { cat: "Backend", items: ["Node.js", "TypeScript", "Express", "Prisma", "MySQL", "Ms SQL", ".NET Core", "Flask","Entity Framework","C#"] },
-  { cat: "Frontend", items: ["HTML", "CSS", "Tailwind CSS", "Bootstrap", "TypeScript"] },
+  { cat: "Backend & Database", items: ["Node.js", "TypeScript", "Express", "Prisma", "MySQL", "Ms SQL", "ASP.NET MVC ", "Flask","Entity Framework","C#"] },
+  { cat: "Frontend", items: ["HTML", "CSS", "Tailwind CSS", "Bootstrap", "JavaScript"] },
   { cat: "AI / NLP", items: ["Python", "PyTorch", "NLTK", "Transformers", "scikit-learn", "pandas", "numpy","RAG","Veri Madenciliği","Derin Öğrenme"] },
   { cat: "DevOps", items: ["Docker", "Git", "GitHub Actions", "Postman"] },
-  { cat: "Oyun geliştirme", items: ["Unity", "C#"] },
+ { cat: "Game Development", items: ["Unity"] },
   { cat: "Görüntü İşleme", items: ["MatLab","kenar algılama","görüntü segmentasyonu","görüntü filterleme"] },
 ];
 
 const langs = [
   { lang: "Türkçe", level: "Anadil", pct: 100, color: "#6366f1" },
-  { lang: "İngilizce", level: "B2", pct: 72, color: "#8b5cf6" },
+  { lang: "İngilizce", level: "B1", pct: 72, color: "#8b5cf6" },
 ];
 
 const interests = [
   { emoji: "🔐", title: "Siber Güvenlik", desc: "Özellikle phishing tespiti ve ESP32 tabanlı Wi-Fi sniffer projeleriyle ağ güvenliği anomali tespiti üzerine çalışmalar." },
   { emoji: "🧠", title: "NLP / AI", desc: "Modern NLP kütüphanelerine (Hugging Face, PyTorch) hakimiyet. BERT ve Word2Vec modelleriyle Türkçe metin işleme, embedding optimizasyonu ve ince ayar (fine-tuning) süreçleri." },
-  { emoji: "⚙️", title: "Backend", desc: "Gözlemlenebilir, sağlam ve bakımı kolay API'lar" },
+  { emoji: "⚙️", title: "Backend", desc: "Gözlemlenebilir, sağlam ve bakımı kolay API'lar ve Backend Tasarım Mimarileri" },
   { emoji: "📚", title: "Akademik Yazım", desc: "Bilimsel araştırma metodolojisi, sistematik bulgu paylaşımı ve düşük maliyetli saldırı tespit sistemleri üzerine akademik yayın hazırlığı." },
 ];
 
@@ -50,7 +50,7 @@ export default function AboutPage() {
                 </div>
                 <h1 className="text-4xl font-black" style={{ color: "rgb(var(--t1))" }}>Fatih Bilici</h1>
                 <p className="text-base font-semibold" style={{ color: "rgb(var(--t3))" }}>
-                  Bilgisayar Mühendisliği Son Sınıf · Backend Developer 
+                  Bilgisayar Mühendisi · Backend Developer 
                 </p>
                 <div className="flex flex-wrap justify-center gap-4 text-sm sm:justify-start" style={{ color: "rgb(var(--t3))" }}>
                   <span className="flex items-center gap-1.5"><Mail className="h-4 w-4 shrink-0 text-indigo-400" />fatihbilig@gmail.com</span>
@@ -143,38 +143,24 @@ export default function AboutPage() {
               <div className="space-y-3 text-sm leading-7" style={{ color: "rgb(var(--t2))" }}>
 
                 <p>
-                  Merhaba, ben Fatih. Afyon Kocatepe Üniversitesi Bilgisayar Mühendisliği son sınıf öğrencisiyim.
-                  Backend geliştirme, veri odaklı düşünme ve karmaşık sistemlerin mimarisini çözme üzerine odaklanan bir yazılım geliştiricisiyim.
-                  Sistemlerin arka planında çalışan mekanizmaları anlamak ve ölçeklenebilir çözümler üretmek benim için her zaman daha çekici oldu.
-                  Bir sistemin yalnızca “çalışıyor” olması benim için yeterli değildir; asıl değer, onun sürdürülebilir, okunabilir ve ölçülebilir bir şekilde çalışmasıdır.
-                </p>
+Merhaba, ben Fatih Bilici. 8 Ekim 2004 tarihinde İstanbul’da doğdum. İlkokul üçüncü sınıfta ailemle birlikte Antalya’ya taşındım. İlkokul ve ortaokul eğitimimi Hüseyin Ak İlkokulu ve Hüseyin Ak Ortaokulu’nda, lise eğitimimi ise Atatürk Anadolu Lisesi’nde tamamladım.
+</p>
 
-                <p>
-                  Geliştirme sürecinde pratik üretmeyi ve sistemi adım adım iyileştirmeyi tercih ederim.
-                  Genellikle önce küçük bir prototip geliştirir, ardından test, loglama ve hata yönetimi gibi
-                  üretim pratiklerini ekleyerek sistemi daha güvenilir hale getiririm.
-                  Şu an Antalya’da devam eden staj deneyimim; API tasarımı, veri doğrulama ve izlenebilirlik
-                  gibi konularda alınan teknik kararların sistem kalitesi üzerinde yarattığı büyük farkları yakından görmemi sağladı.
-                </p>
+<p>
+Lisans eğitimimi Afyon Kocatepe Üniversitesi Bilgisayar Mühendisliği bölümünde tamamladım. Üniversite sürecimde özellikle backend geliştirme, veri odaklı düşünme ve sistemlerin arka plan mimarisini anlama konularına odaklandım. Yazılım geliştirmede yalnızca çalışan bir sistem üretmenin yeterli olmadığını düşünüyorum; benim için önemli olan sistemlerin okunabilir, sürdürülebilir ve ölçeklenebilir bir şekilde tasarlanmasıdır.
+</p>
 
-                <p>
-                  Backend dünyasına ek olarak, donanım ve siber güvenlik kesişiminde projeler geliştiriyorum.
-                  Özellikle ESP32 kullanarak geliştirdiğim "Düşük Maliyetli Kablosuz Saldırı Tespiti" projesi üzerinde akademik bir yayın hazırlığındayım.
-                  Bu çalışma, ağ protokolleri ve anomali tespiti konularındaki teknik derinliğimi pekiştirdi.
-                </p>
+<p>
+Geliştirme sürecinde genellikle küçük bir prototiple başlayıp sistemi adım adım geliştirmeyi tercih ederim. Bu süreçte test, loglama, hata yönetimi ve izlenebilirlik gibi üretim ortamı pratiklerini sisteme ekleyerek daha güvenilir yazılımlar oluşturmayı hedeflerim. Antalya’da gerçekleştirdiğim staj deneyimi sırasında API tasarımı, veri doğrulama ve sistem mimarisi konularında alınan teknik kararların yazılım kalitesi üzerindeki etkilerini yakından gözlemleme fırsatı buldum.
+</p>
 
-                <p>
-                  Yapay zeka, özellikle Doğal Dil İşleme (NLP) alanı tutkuyla üzerinde çalıştığım bir diğer nokta.
-                  Sadece hazır kütüphaneleri kullanmakla kalmıyor; BERT, Word2Vec ve FastText gibi modellerin çalışma prensiplerine,
-                  Türkçe metin işleme yöntemlerine ve model ince ayar (fine-tuning) süreçlerine hakimiyetimi projelerime yansıtıyorum.
-                  Türkçe şarkı sözleri üzerinden duygu analizi ve derin öğrenme tabanlı phishing tespiti gibi uygulamalarla veri madenciliği yetkinliklerimi geliştiriyorum.
-                </p>
+<p>
+Backend geliştirme alanına ek olarak donanım ve siber güvenlik kesişiminde de projeler geliştirdim. ESP32 mikrodenetleyicisi kullanarak geliştirdiğim “Düşük Maliyetli Kablosuz Saldırı Tespiti” projesi üzerine akademik bir çalışma hazırladım ve bu çalışma bir konferansta sözlü sunum olarak kabul edildi. Bu proje kapsamında kablosuz ağ trafiği analizi, anomali tespiti ve ağ güvenliği konularında pratik deneyim kazandım.
+</p>
 
-                <p>
-                  Gelecek vizyonumda akademik bir kariyer hedefliyor, ALES hazırlıklarımla birlikte ilerliyorum.
-                  Bulut teknolojileri, network ve yapay zeka bileşenlerini modern backend mimarileriyle birleştirerek
-                  katma değer sağlayan çözümler üretmeye devam ediyorum.
-                </p>
+<p>
+Ayrıca yapay zeka alanına da ilgi duyuyorum. Üniversitede aldığım Derin Öğrenme ve Veri Madenciliği dersleri kapsamında veri odaklı bazı projeler geliştirdim. Bu süreçte özellikle metin verileri üzerinde çalışarak Türkçe şarkı sözleri üzerinden duygu analizi ve derin öğrenme tabanlı phishing (oltalama) tespiti gibi uygulamalar geliştirdim. Bu çalışmalar sayesinde makine öğrenmesi modellerinin veri analizi ve güvenlik alanlarında nasıl kullanılabileceğini deneyimleme fırsatı elde ettim.
+</p>
               </div>
             </div>
           </Reveal>

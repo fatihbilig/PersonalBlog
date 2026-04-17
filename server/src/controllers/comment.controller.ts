@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma";
 
 const NAME_MIN = 1;
@@ -34,10 +35,41 @@ type CommentRow = {
   createdAt: Date;
 };
 
-export function formatComment(c: CommentRow) {
+type JwtPayload = {
+  adminId: number;
+  username: string;
+};
+
+function normalizeName(value: string): string {
+  return value.trim().toLocaleLowerCase("tr-TR");
+}
+
+async function getOptionalAdmin(req: Request): Promise<JwtPayload | null> {
+  const header = req.headers.authorization;
+  const token = header?.startsWith("Bearer ") ? header.slice(7) : undefined;
+  if (!token) return null;
+
+  const secret = process.env.JWT_SECRET;
+  if (!secret) return null;
+
+  try {
+    const decoded = jwt.verify(token, secret) as JwtPayload;
+    const admin = await prisma.admin.findUnique({
+      where: { username: decoded.username },
+      select: { id: true, username: true },
+    });
+    if (!admin || admin.id !== decoded.adminId) return null;
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
+export function formatComment(c: CommentRow, adminNames: Set<string>) {
   return {
     id: String(c.id),
     name: c.authorName,
+    isAdmin: adminNames.has(normalizeName(c.authorName)),
     text: c.body,
     reactions: {
       thumb: c.reactionThumb,
@@ -77,7 +109,10 @@ export async function getCommentsForPost(req: Request, res: Response) {
     orderBy: { createdAt: "asc" },
   });
 
-  return res.json(rows.map(formatComment));
+  const admins = await prisma.admin.findMany({ select: { username: true } });
+  const adminNames = new Set(admins.map((a) => normalizeName(a.username)));
+
+  return res.json(rows.map((row) => formatComment(row, adminNames)));
 }
 
 export async function createCommentForPost(req: Request, res: Response) {
@@ -85,8 +120,21 @@ export async function createCommentForPost(req: Request, res: Response) {
   if (!slug) return res.status(400).json({ message: "slug is required" });
 
   const raw = req.body as { name?: string; text?: string };
-  const name = typeof raw.name === "string" ? raw.name.trim() : "";
+  const admin = await getOptionalAdmin(req);
+  const name = admin?.username ?? (typeof raw.name === "string" ? raw.name.trim() : "");
   const text = typeof raw.text === "string" ? raw.text.trim() : "";
+
+  if (!admin) {
+    const reserved = await prisma.admin.findUnique({
+      where: { username: name },
+      select: { id: true },
+    });
+    if (reserved) {
+      return res.status(400).json({
+        message: "Bu isim ayrılmış durumda. Lütfen farklı bir görünen ad kullan.",
+      });
+    }
+  }
 
   if (name.length < NAME_MIN || name.length > NAME_MAX) {
     return res.status(400).json({
@@ -113,7 +161,10 @@ export async function createCommentForPost(req: Request, res: Response) {
     },
   });
 
-  return res.status(201).json(formatComment(created));
+  const admins = await prisma.admin.findMany({ select: { username: true } });
+  const adminNames = new Set(admins.map((a) => normalizeName(a.username)));
+
+  return res.status(201).json(formatComment(created, adminNames));
 }
 
 /** Body: { type: THUMB|BULB|HEART, previousType?: same | omit } — önceki seçimi değiştir veya aynısına tekrar basınca kaldır */
@@ -164,5 +215,8 @@ export async function reactToComment(req: Request, res: Response) {
     },
   });
 
-  return res.json(formatComment(updated));
+  const admins = await prisma.admin.findMany({ select: { username: true } });
+  const adminNames = new Set(admins.map((a) => normalizeName(a.username)));
+
+  return res.json(formatComment(updated, adminNames));
 }

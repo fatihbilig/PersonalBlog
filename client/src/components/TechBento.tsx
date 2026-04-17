@@ -4,19 +4,19 @@ import { useEffect, useRef } from "react";
 import Reveal from "@/components/Reveal";
 
 const skills = [
-  { name: "Node.js / TypeScript/ Express  ",  pct: 65, color: "#6366f1" },
-  { name: "Python / Pandas / NumPy / Scikit-learn / Matplotlib / PyTorch",       pct: 50, color: "#8b5cf6" },
-  { name: "MySQL / Ms SQL / Prisma",         pct: 65, color: "#34d399" },
-  { name: "NLP teknikleri ",          pct: 55, color: "#f472b6" },
+  { name: "Node.js / TypeScript/ Express  ",  pct: 75, color: "#6366f1" },
+  { name: "Python / Pandas / NumPy / Scikit-learn / Matplotlib / PyTorch",       pct: 60, color: "#8b5cf6" },
+  { name: "MySQL / Ms SQL / Prisma",         pct: 85, color: "#34d399" },
+  { name: "NLP teknikleri ",          pct: 45, color: "#f472b6" },
   { name: "Docker / Git / Postman",   pct: 60, color: "#60a5fa" },
-  { name: ".Net Core / C# / Entity Framework",         pct: 80, color: "#fb923c" },
+  { name: "ASP .Net MVC / C# / Entity Framework",         pct: 80, color: "#fb923c" },
 ];
 
 const stacks = [
   {
     title: "Backend & Databases",
     subtitle: "API tasarımı & üretim pratikleri",
-    items: ["Node.js", "TypeScript", "Express", "Prisma", "MySQL","Ms SQL",".Net Core","Entity Framework", "C#"],
+    items: ["Node.js", "TypeScript", "Express", "Prisma", "MySQL","Ms SQL"," ASP.Net MVC","Entity Framework", "C#"],
     accent: "#6366f1",
     icon: "🖥️",
     wide: true,
@@ -24,7 +24,7 @@ const stacks = [
   {
     title: "Frontend & UI",
     subtitle: "Görsel tasarım & kullanıcı deneyimi",
-    items: ["HTML", "CSS", "JavaScript", "React", "Tailwind CSS","Bootstrap","Canva"],
+    items: ["HTML", "CSS", "JavaScript", "Tailwind CSS","Bootstrap","Canva"],
     accent: "#ec63f1",
     icon: "🖥️",
     wide: true,
@@ -57,7 +57,7 @@ const stacks = [
   {
     title: "Araçlar",
     subtitle: "Günlük üretim & dağıtım akışı",
-    items: ["Git", "Docker", "Linux", "Postman", "VS Code"],
+    items: ["Git", "Docker","Postman", "VS Code"],
     accent: "#34d399",
     icon: "🔧",
     wide: true,

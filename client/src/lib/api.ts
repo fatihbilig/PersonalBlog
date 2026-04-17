@@ -40,8 +40,17 @@ export type AdminStats = {
   visitorsByCountry: { country: string; count: number }[];
 };
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE?.trim() || "http://localhost:4000/api";
+function normalizeApiBase(raw?: string): string {
+  const fallback = "http://localhost:4000/api";
+  const value = raw?.trim();
+  if (!value) return fallback;
+
+  const withoutTrailingSlash = value.replace(/\/+$/, "");
+  if (/\/api$/i.test(withoutTrailingSlash)) return withoutTrailingSlash;
+  return `${withoutTrailingSlash}/api`;
+}
+
+export const API_BASE = normalizeApiBase(process.env.NEXT_PUBLIC_API_BASE);
 const TOKEN_KEY = "auth_token";
 const AUTH_EVENT_NAME = "auth-token-change";
 
@@ -49,7 +58,9 @@ const AUTH_EVENT_NAME = "auth-token-change";
 let legacyLocalTokenCleared = false;
 
 async function safeJson<T>(res: Response): Promise<T> {
-  if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+  if (!res.ok) {
+    throw new Error(`Request failed: ${res.status} (${res.url || "unknown url"})`);
+  }
   return (await res.json()) as T;
 }
 
@@ -143,13 +154,8 @@ export async function getProjects(): Promise<Project[]> {
 }
 
 /** Sadece RSC (server): Next önbelleği — site hızı için */
-const RSC_REVALIDATE_LIST = 60;
-const RSC_REVALIDATE_POST = 120;
-
 export async function getPostsForRsc(): Promise<Post[]> {
-  const res = await fetch(`${API_BASE}/posts`, {
-    next: { revalidate: RSC_REVALIDATE_LIST },
-  });
+  const res = await fetch(`${API_BASE}/posts`, { cache: "no-store" });
   return await safeJson<Post[]>(res);
 }
 
@@ -173,16 +179,12 @@ export async function getPostsPagedForRsc(params: {
   sp.set("pageSize", String(params.pageSize ?? 9));
   if (params.category) sp.set("category", params.category);
   if (params.search?.trim()) sp.set("search", params.search.trim());
-  const res = await fetch(`${API_BASE}/posts?${sp.toString()}`, {
-    next: { revalidate: RSC_REVALIDATE_LIST },
-  });
+  const res = await fetch(`${API_BASE}/posts?${sp.toString()}`, { cache: "no-store" });
   return await safeJson<PostsPaged>(res);
 }
 
 export async function getProjectsForRsc(): Promise<Project[]> {
-  const res = await fetch(`${API_BASE}/projects`, {
-    next: { revalidate: RSC_REVALIDATE_LIST },
-  });
+  const res = await fetch(`${API_BASE}/projects`, { cache: "no-store" });
   return await safeJson<Project[]>(res);
 }
 
@@ -203,16 +205,12 @@ export async function getProjectsPagedForRsc(params: {
   sp.set("page", String(params.page));
   sp.set("pageSize", String(params.pageSize ?? 9));
   if (params.search?.trim()) sp.set("search", params.search.trim());
-  const res = await fetch(`${API_BASE}/projects?${sp.toString()}`, {
-    next: { revalidate: RSC_REVALIDATE_LIST },
-  });
+  const res = await fetch(`${API_BASE}/projects?${sp.toString()}`, { cache: "no-store" });
   return await safeJson<ProjectsPaged>(res);
 }
 
 export async function getPostBySlugForRsc(slug: string): Promise<Post> {
-  const res = await fetch(`${API_BASE}/posts/${encodeURIComponent(slug)}`, {
-    next: { revalidate: RSC_REVALIDATE_POST },
-  });
+  const res = await fetch(`${API_BASE}/posts/${encodeURIComponent(slug)}`, { cache: "no-store" });
   return await safeJson<Post>(res);
 }
 
@@ -419,6 +417,7 @@ export type ReactionKind = "THUMB" | "BULB" | "HEART";
 export type PostComment = {
   id: string;
   name: string;
+  isAdmin?: boolean;
   text: string;
   reactions: CommentReactions;
   authorReply: string | null;
@@ -438,13 +437,11 @@ export async function submitComment(
   slug: string,
   body: { name: string; text: string },
 ): Promise<PostComment> {
-  const res = await fetch(
+  const res = await authedFetch(
     `${API_BASE}/posts/${encodeURIComponent(slug)}/comments`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: body.name, text: body.text }),
-      cache: "no-store",
     },
   );
   if (!res.ok) {
