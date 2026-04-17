@@ -161,6 +161,14 @@ Backend geliştirme alanına ek olarak donanım ve siber güvenlik kesişiminde 
 <p>
 Ayrıca yapay zeka alanına da ilgi duyuyorum. Üniversitede aldığım Derin Öğrenme ve Veri Madenciliği dersleri kapsamında veri odaklı bazı projeler geliştirdim. Bu süreçte özellikle metin verileri üzerinde çalışarak Türkçe şarkı sözleri üzerinden duygu analizi ve derin öğrenme tabanlı phishing (oltalama) tespiti gibi uygulamalar geliştirdim. Bu çalışmalar sayesinde makine öğrenmesi modellerinin veri analizi ve güvenlik alanlarında nasıl kullanılabileceğini deneyimleme fırsatı elde ettim.
 </p>
+
+<p>
+Akademik hayatım boyunca Bilgisayar Mühendisliği ve Yapay Zeka kulüplerinde aktif görevler alarak topluluk çalışmalarına katkı sağladım. Özellikle GDG (Google Developer Groups) bünyesinde yürüttüğüm yöneticilik görevleri ve DevFest gibi geniş katılımlı organizasyonlardaki operasyonel sorumluluklarım sayesinde ekip çalışması, organizasyon yönetimi ve liderlik becerilerimi geliştirdim.
+</p>
+
+<p>
+Hedefim, edindiğim bu teknik ve sosyal birikimi profesyonel bir çalışma ortamında katma değere dönüştürerek sürekli gelişen bir mühendislik kariyeri inşa etmektir.
+</p>
               </div>
             </div>
           </Reveal>
