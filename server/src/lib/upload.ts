@@ -39,6 +39,7 @@ export async function uploadImageBuffer(params: {
     data: {
       mimeType: mimetype,
       originalName: filename?.trim() || null,
+      fileSize: buffer.length,
       data: Uint8Array.from(buffer),
     },
     select: { id: true },

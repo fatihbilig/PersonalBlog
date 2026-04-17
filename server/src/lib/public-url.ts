@@ -4,8 +4,33 @@ function cleanBase(raw?: string | null): string | null {
   return value.replace(/\/+$/, "");
 }
 
-function getPublicBase(): string | null {
+export function getPublicBase(): string | null {
   return cleanBase(process.env.SERVER_URL) ?? null;
+}
+
+export function buildImageAssetUrl(id?: string | null): string | null {
+  const value = id?.trim();
+  const publicBase = getPublicBase();
+  if (!value || !publicBase) return null;
+  return `${publicBase}/api/images/${encodeURIComponent(value)}`;
+}
+
+export function extractImageAssetId(raw?: string | null): string | null {
+  const value = raw?.trim();
+  if (!value) return null;
+
+  if (/^[a-z0-9]{20,}$/i.test(value) && !value.includes("/")) {
+    return value;
+  }
+
+  try {
+    const parsed = new URL(value, "http://placeholder.local");
+    const match = parsed.pathname.match(/\/api\/images\/([^/?#]+)/i);
+    if (!match?.[1]) return null;
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
 }
 
 export function normalizePublicImageUrl(raw?: string | null): string | null {

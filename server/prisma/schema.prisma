@@ -7,17 +7,31 @@ datasource db {
 }
 
 model Post {
-  id          Int          @id @default(autoincrement())
-  title       String
-  slug        String       @unique
-  content     String       @db.Text
-  excerpt     String?
-  imageUrl    String?
-  viewCount   Int          @default(0)
-  category    String       @db.VarChar(32)
-  createdAt   DateTime     @default(now())
-  comments    Comment[]
-  visitorLogs VisitorLog[]
+  id              Int          @id @default(autoincrement())
+  title           String
+  slug            String       @unique
+  content         String       @db.Text
+  excerpt         String?
+  imageUrl        String?
+  imageAssetId    String?      @db.VarChar(191)
+  tagsJson        String?      @db.Text
+  viewCount       Int          @default(0)
+  category        String       @db.VarChar(32)
+  published       Boolean      @default(true)
+  featured        Boolean      @default(false)
+  status          String       @default("PUBLISHED") @db.VarChar(32)
+  metaTitle       String?      @db.VarChar(255)
+  metaDescription String?      @db.VarChar(320)
+  canonicalUrl    String?      @db.VarChar(512)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  comments        Comment[]
+  visitorLogs     VisitorLog[]
+  imageAsset      ImageAsset?  @relation("PostImageAsset", fields: [imageAssetId], references: [id], onDelete: SetNull)
+
+  @@index([imageAssetId])
+  @@index([published, featured])
+  @@index([status])
 }
 
 model Comment {
@@ -38,14 +52,31 @@ model Comment {
 }
 
 model Project {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  techStack   String
-  imageUrl    String?
-  githubLink  String?
-  liveLink    String?
-  createdAt   DateTime @default(now())
+  id              Int         @id @default(autoincrement())
+  title           String
+  slug            String?     @unique @db.VarChar(191)
+  description     String
+  summary         String?     @db.Text
+  techStack       String
+  imageUrl        String?
+  imageAssetId    String?     @db.VarChar(191)
+  githubLink      String?
+  liveLink        String?
+  published       Boolean     @default(true)
+  featured        Boolean     @default(false)
+  status          String      @default("PUBLISHED") @db.VarChar(32)
+  sortOrder       Int         @default(0)
+  metaTitle       String?     @db.VarChar(255)
+  metaDescription String?     @db.VarChar(320)
+  canonicalUrl    String?     @db.VarChar(512)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  imageAsset      ImageAsset? @relation("ProjectImageAsset", fields: [imageAssetId], references: [id], onDelete: SetNull)
+
+  @@index([imageAssetId])
+  @@index([published, featured])
+  @@index([sortOrder, createdAt])
+  @@index([status])
 }
 
 model Admin {
@@ -69,11 +100,18 @@ model VisitorLog {
 }
 
 model ImageAsset {
-  id           String   @id @default(cuid())
-  mimeType     String   @db.VarChar(128)
-  originalName String?  @db.VarChar(255)
-  data         Bytes    @db.LongBlob
-  createdAt    DateTime @default(now())
+  id           String    @id @default(cuid())
+  mimeType     String    @db.VarChar(128)
+  originalName String?   @db.VarChar(255)
+  altText      String?   @db.VarChar(255)
+  fileSize     Int?
+  width        Int?
+  height       Int?
+  data         Bytes     @db.LongBlob
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  posts        Post[]    @relation("PostImageAsset")
+  projects     Project[] @relation("ProjectImageAsset")
 
   @@index([createdAt])
 }

@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
-import { normalizePublicImageUrl } from "../lib/public-url";
+import {
+  buildImageAssetUrl,
+  extractImageAssetId,
+  normalizePublicImageUrl,
+} from "../lib/public-url";
 import { slugify } from "../utils/slugify";
 import { getClientIp } from "../utils/client-ip";
 import geoip from "geoip-lite";
@@ -61,23 +65,105 @@ type RawPost = {
   content: string;
   excerpt: string | null;
   imageUrl: string | null;
+  imageAssetId: string | null;
+  tagsJson: string | null;
   viewCount: number;
   category: string;
+  published: boolean;
+  featured: boolean;
+  status: string;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  canonicalUrl: string | null;
   createdAt: Date;
+  updatedAt: Date;
 };
 
+function parseBooleanish(raw: unknown): boolean | undefined {
+  if (typeof raw === "boolean") return raw;
+  if (typeof raw === "string") {
+    const value = raw.trim().toLowerCase();
+    if (["true", "1", "yes", "on"].includes(value)) return true;
+    if (["false", "0", "no", "off"].includes(value)) return false;
+  }
+  return undefined;
+}
+
+function parseOptionalText(raw: unknown): string | null | undefined {
+  if (raw === undefined) return undefined;
+  if (raw === null) return null;
+  if (typeof raw !== "string") return null;
+  const value = raw.trim();
+  return value || null;
+}
+
+function parseStatus(raw: unknown): string | undefined {
+  const value = parseOptionalText(raw);
+  if (value === undefined || value === null) return value ?? undefined;
+  return value.toUpperCase();
+}
+
+function parseTagsJson(raw: unknown): string | null | undefined {
+  if (raw === undefined) return undefined;
+  if (raw === null) return null;
+  if (Array.isArray(raw)) {
+    const tags = raw.map(v => String(v).trim()).filter(Boolean);
+    return tags.length ? JSON.stringify(tags) : null;
+  }
+  if (typeof raw === "string") {
+    const value = raw.trim();
+    if (!value) return null;
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (Array.isArray(parsed)) {
+        const tags = parsed.map(v => String(v).trim()).filter(Boolean);
+        return tags.length ? JSON.stringify(tags) : null;
+      }
+    } catch {
+      const tags = value.split(",").map(v => v.trim()).filter(Boolean);
+      return tags.length ? JSON.stringify(tags) : null;
+    }
+  }
+  return null;
+}
+
+function parseTags(tagsJson: string | null): string[] | null {
+  if (!tagsJson?.trim()) return null;
+  try {
+    const parsed = JSON.parse(tagsJson) as unknown;
+    if (!Array.isArray(parsed)) return null;
+    const tags = parsed.map(v => String(v).trim()).filter(Boolean);
+    return tags.length ? tags : null;
+  } catch {
+    return null;
+  }
+}
+
 function formatPost(p: RawPost) {
+  const resolvedImageUrl =
+    buildImageAssetUrl(p.imageAssetId) ??
+    normalizePublicImageUrl(p.imageUrl);
+
   return {
     id: String(p.id),
     title: p.title,
     slug: p.slug,
     content: p.content,
     excerpt: p.excerpt,
-    imageUrl: normalizePublicImageUrl(p.imageUrl),
+    imageUrl: resolvedImageUrl,
+    imageAssetId: p.imageAssetId,
+    tags: parseTags(p.tagsJson),
     viewCount: p.viewCount,
     category: categoryFromDatabase(p.category),
+    published: p.published,
+    featured: p.featured,
+    status: p.status,
+    metaTitle: p.metaTitle,
+    metaDescription: p.metaDescription,
+    canonicalUrl: p.canonicalUrl,
     date: p.createdAt.toISOString().slice(0, 10),
     createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
   };
 }
 
@@ -195,20 +281,49 @@ export async function getPostBySlug(req: Request, res: Response) {
 }
 
 export async function createPost(req: Request, res: Response) {
-  const { title, slug, content, excerpt, category, imageUrl } = req.body as {
+  const {
+    title,
+    slug,
+    content,
+    excerpt,
+    category,
+    imageUrl,
+    tags,
+    published,
+    featured,
+    status,
+    metaTitle,
+    metaDescription,
+    canonicalUrl,
+  } = req.body as {
     title?: string;
     slug?: string;
     content?: string;
     excerpt?: string;
     category?: string;
     imageUrl?: string;
+    tags?: string[] | string;
+    published?: boolean | string;
+    featured?: boolean | string;
+    status?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+    canonicalUrl?: string;
   };
 
   const t = title?.trim();
   const c = content?.trim();
   const ex = excerpt?.trim();
   const img = imageUrl?.trim();
+  const imageAssetId = extractImageAssetId(img);
   const cat = parseCategory(category);
+  const tagsJson = parseTagsJson(tags);
+  const publishedValue = parseBooleanish(published);
+  const featuredValue = parseBooleanish(featured);
+  const statusValue = parseStatus(status);
+  const metaTitleValue = parseOptionalText(metaTitle);
+  const metaDescriptionValue = parseOptionalText(metaDescription);
+  const canonicalUrlValue = parseOptionalText(canonicalUrl);
 
   if (!t || !c || !cat) {
     return res.status(400).json({
@@ -227,7 +342,15 @@ export async function createPost(req: Request, res: Response) {
       content: c,
       excerpt: ex || null,
       imageUrl: img || null,
+      imageAssetId: imageAssetId ?? null,
+      tagsJson: tagsJson ?? null,
       category: categoryToDatabase(cat),
+      published: publishedValue ?? true,
+      featured: featuredValue ?? false,
+      status: statusValue ?? "PUBLISHED",
+      metaTitle: metaTitleValue ?? null,
+      metaDescription: metaDescriptionValue ?? null,
+      canonicalUrl: canonicalUrlValue ?? null,
     },
   });
 
@@ -243,19 +366,48 @@ export async function updatePost(req: Request, res: Response) {
     return res.status(400).json({ message: "invalid id" });
   }
 
-  const { title, slug, content, excerpt, category, imageUrl } = req.body as {
+  const {
+    title,
+    slug,
+    content,
+    excerpt,
+    category,
+    imageUrl,
+    tags,
+    published,
+    featured,
+    status,
+    metaTitle,
+    metaDescription,
+    canonicalUrl,
+  } = req.body as {
     title?: string;
     slug?: string;
     content?: string;
     excerpt?: string;
     category?: string;
     imageUrl?: string;
+    tags?: string[] | string | null;
+    published?: boolean | string;
+    featured?: boolean | string;
+    status?: string | null;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    canonicalUrl?: string | null;
   };
 
   const t = title?.trim();
   const c = content?.trim();
   const ex = excerpt?.trim();
   const img = imageUrl === undefined ? undefined : imageUrl?.trim() || null;
+  const imageAssetId = img === undefined ? undefined : extractImageAssetId(img);
+  const tagsJson = parseTagsJson(tags);
+  const publishedValue = parseBooleanish(published);
+  const featuredValue = parseBooleanish(featured);
+  const statusValue = parseStatus(status);
+  const metaTitleValue = parseOptionalText(metaTitle);
+  const metaDescriptionValue = parseOptionalText(metaDescription);
+  const canonicalUrlValue = parseOptionalText(canonicalUrl);
   let cat: PostCategory | undefined;
   if (category !== undefined) {
     const parsed = parseCategory(category);
@@ -287,7 +439,15 @@ export async function updatePost(req: Request, res: Response) {
       ...(c !== undefined ? { content: c } : {}),
       ...(ex !== undefined ? { excerpt: ex || null } : {}),
       ...(img !== undefined ? { imageUrl: img } : {}),
+      ...(img !== undefined ? { imageAssetId: imageAssetId ?? null } : {}),
+      ...(tagsJson !== undefined ? { tagsJson } : {}),
       ...(cat !== undefined ? { category: categoryToDatabase(cat) } : {}),
+      ...(publishedValue !== undefined ? { published: publishedValue } : {}),
+      ...(featuredValue !== undefined ? { featured: featuredValue } : {}),
+      ...(statusValue !== undefined ? { status: statusValue } : {}),
+      ...(metaTitleValue !== undefined ? { metaTitle: metaTitleValue } : {}),
+      ...(metaDescriptionValue !== undefined ? { metaDescription: metaDescriptionValue } : {}),
+      ...(canonicalUrlValue !== undefined ? { canonicalUrl: canonicalUrlValue } : {}),
     },
   });
 
