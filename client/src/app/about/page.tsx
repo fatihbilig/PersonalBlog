@@ -17,7 +17,7 @@ const skills = [
   { cat: "AI / NLP", items: ["Python", "PyTorch", "NLTK", "Transformers", "scikit-learn", "pandas", "numpy","RAG","Veri Madenciliği","Derin Öğrenme"] },
   { cat: "DevOps", items: ["Docker", "Git", "GitHub Actions", "Postman"] },
  { cat: "Game Development", items: ["Unity"] },
-  { cat: "Görüntü İşleme", items: ["MatLab","kenar algılama","görüntü segmentasyonu","görüntü filterleme"] },
+  { cat: "Görüntü İşleme", items: ["MatLab","Kenar Algılama Algoritmaları","Görüntü Segmentasyonu","Görüntü Filterleme"] },
 ];
 
 const langs = [

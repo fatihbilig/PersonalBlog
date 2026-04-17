@@ -18,7 +18,7 @@ const stacks = [
     subtitle: "API tasarımı & üretim pratikleri",
     items: ["Node.js", "TypeScript", "Express", "Prisma", "MySQL","Ms SQL"," ASP.Net MVC","Entity Framework", "C#"],
     accent: "#6366f1",
-    icon: "🖥️",
+    icon: "⚙️",
     wide: true,
   },
   {
@@ -42,7 +42,7 @@ const stacks = [
     subtitle: "Basit görüntü işleme teknikleri",
     items: ["MatLab", "Matplotlib","Görüntü Filtreleme","Kenar Algılama"],
     accent: "#6366f1",
-    icon: "🎮",
+    icon: "👁️",
     wide: true,
   },
   
