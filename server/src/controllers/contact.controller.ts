@@ -11,7 +11,7 @@ export async function sendContactMail(req: Request, res: Response) {
 
   const n = name?.trim();
   const e = email?.trim();
-  const s = subject?.trim() || "Web Sitesi İletişim Formu";
+  const s = subject?.trim() || "Web Sitesi Ä°letiÅŸim Formu";
   const m = message?.trim();
 
   if (!n || !e || !m) {
@@ -32,6 +32,9 @@ export async function sendContactMail(req: Request, res: Response) {
     host,
     port,
     secure: port === 465,
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 20_000,
     auth: { user, pass },
   });
 
@@ -57,4 +60,3 @@ export async function sendContactMail(req: Request, res: Response) {
 
   return res.status(200).json({ ok: true });
 }
-

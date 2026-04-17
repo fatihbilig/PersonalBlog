@@ -41,7 +41,8 @@ export default function Footer() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="mailto:fatihbilig@gmail.com"
+                href="/contact"
+                prefetch={false}
                 className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:brightness-110"
               >
                 <Mail className="h-4 w-4" />
@@ -86,7 +87,7 @@ export default function Footer() {
                 Sayfalar
               </div>
               {pages.map(l => (
-                <Link key={l.href} href={l.href} className="footer-nav-link block text-sm transition">
+                <Link key={l.href} href={l.href} prefetch={false} className="footer-nav-link block text-sm transition">
                   {l.label}
                 </Link>
               ))}
@@ -96,7 +97,7 @@ export default function Footer() {
                 Kategoriler
               </div>
               {["TECH", "ACADEMIC", "GÜNLÜK"].map(c => (
-                <Link key={c} href="/blog" className="footer-nav-link block text-sm transition">
+                <Link key={c} href="/blog" prefetch={false} className="footer-nav-link block text-sm transition">
                   {c}
                 </Link>
               ))}

@@ -9,6 +9,8 @@ import CommentSection from "@/components/CommentSection";
 import SharePost from "@/components/SharePost";
 import { formatDisplayDate } from "@/lib/dates";
 
+export const dynamic = "force-dynamic";
+
 const CAT_CLS: Record<string, string> = {
   TECH:     "border-indigo-500/40 bg-indigo-500/15 text-indigo-300",
   ACADEMIC: "border-emerald-500/40 bg-emerald-500/15 text-emerald-300",

@@ -12,6 +12,8 @@ import BlogSlider from "@/components/BlogSlider";
 import HomeHeroSlider from "@/components/HomeHeroSlider";
 import HomeDateClock from "@/components/HomeDateClock";
 
+export const dynamic = "force-dynamic";
+
 function pickInterestingPosts(all: Post[], excludeIds: Set<string>, limit = 6): Post[] {
   const pool = all.filter(p => !excludeIds.has(String(p.id)));
   const byViews = [...pool].sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0));

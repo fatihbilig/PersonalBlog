@@ -9,6 +9,8 @@ import PostCard from "@/components/PostCard";
 import Reveal from "@/components/Reveal";
 import SectionTitle from "@/components/SectionTitle";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   searchParams,
 }: {

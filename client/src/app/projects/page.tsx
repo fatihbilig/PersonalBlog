@@ -5,6 +5,8 @@ import ProjectsListing from "@/components/ProjectsListing";
 import Reveal from "@/components/Reveal";
 import SectionTitle from "@/components/SectionTitle";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   searchParams,
 }: {
