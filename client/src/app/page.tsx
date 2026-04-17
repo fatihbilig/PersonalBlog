@@ -81,7 +81,7 @@ export default async function Home() {
                   Hoşgeldiniz 
                 </span>
                 <span className="inline-block shrink-0" style={{ color: "rgb(var(--t1))" }}>
-                  🥳
+                  
                 </span>
               </h1>
             </Reveal>
