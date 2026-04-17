@@ -16,7 +16,11 @@ export default function HomeHeroSlider({ variant = "centered" }: HomeHeroSliderP
   const [idx, setIdx] = useState(0);
   const [manualPaused, setManualPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false,
+  );
   const touchStartX = useRef<number | null>(null);
 
   const paused = manualPaused || hovered;
@@ -25,8 +29,7 @@ export default function HomeHeroSlider({ variant = "centered" }: HomeHeroSliderP
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduceMotion(mq.matches);
-    const fn = () => setReduceMotion(mq.matches);
+    const fn = (event: MediaQueryListEvent) => setReduceMotion(event.matches);
     mq.addEventListener("change", fn);
     return () => mq.removeEventListener("change", fn);
   }, []);
@@ -74,7 +77,7 @@ export default function HomeHeroSlider({ variant = "centered" }: HomeHeroSliderP
       <div
         className="relative w-full touch-pan-y overflow-hidden bg-black"
         style={{
-          height: "clamp(300px, min(58vmin, 52vw), 520px)",
+          height: "clamp(220px, 62vw, 520px)",
         }}
         onTouchStart={e => {
           touchStartX.current = e.touches[0]?.clientX ?? null;
@@ -111,7 +114,7 @@ export default function HomeHeroSlider({ variant = "centered" }: HomeHeroSliderP
                 fetchPriority={i === 0 ? "high" : "low"}
                 loading={i === 0 ? "eager" : "lazy"}
                 draggable={false}
-                className="max-h-full max-w-full object-contain object-center rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.55)] ring-1 ring-white/10"
+                className="block h-full w-full object-contain object-center rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.55)] ring-1 ring-white/10"
               />
             </div>
           ))}

@@ -46,11 +46,11 @@ export default function BlogSlider({ posts, layout = "stack" }: BlogSliderProps)
                 <div key={post.id} className="min-w-full">
                   <Link href={`/blog/${post.slug}`} prefetch={false}>
                     <div
-                      className="group flex min-h-[7.5rem] overflow-hidden rounded-2xl border sm:min-h-[8rem]"
+                      className="group flex min-h-[7.5rem] flex-col overflow-hidden rounded-2xl border sm:min-h-[8rem] sm:flex-row"
                       style={{ borderColor: "rgb(var(--surface2))", background: "rgb(var(--surface))" }}
                     >
                       <div
-                        className="relative h-auto w-[7.25rem] shrink-0 overflow-hidden sm:w-36"
+                        className="relative aspect-[16/10] w-full shrink-0 overflow-hidden sm:h-auto sm:w-36 sm:aspect-auto"
                         style={{ background: "rgb(var(--surface2))", minHeight: "7.5rem" }}
                       >
                         {post.imageUrl ? (
@@ -58,7 +58,7 @@ export default function BlogSlider({ posts, layout = "stack" }: BlogSliderProps)
                           <img
                             src={post.imageUrl}
                             alt={post.title}
-                            className="absolute inset-0 h-full w-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-[1.04]"
+                            className="absolute inset-0 block h-full w-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-[1.04]"
                           />
                         ) : (
                           <div
@@ -73,7 +73,7 @@ export default function BlogSlider({ posts, layout = "stack" }: BlogSliderProps)
                         )}
                       </div>
                       <div
-                        className="flex min-w-0 flex-1 flex-col justify-center gap-1 border-l px-3 py-2.5 sm:px-4 sm:py-3"
+                        className="flex min-w-0 flex-1 flex-col justify-center gap-1 border-t px-3 py-2.5 sm:border-l sm:border-t-0 sm:px-4 sm:py-3"
                         style={{ borderColor: "rgb(var(--surface2))" }}
                       >
                         <span className={`inline-flex w-fit items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${cls}`}>
@@ -117,7 +117,7 @@ export default function BlogSlider({ posts, layout = "stack" }: BlogSliderProps)
                     style={{ borderColor: "rgb(var(--surface2))" }}
                   >
                     <div
-                      className="relative h-56 w-full overflow-hidden sm:h-64 md:h-72"
+                      className="relative aspect-[16/10] w-full overflow-hidden sm:aspect-[16/9]"
                       style={{ background: "rgb(var(--surface2))" }}
                     >
                       {post.imageUrl ? (
@@ -125,7 +125,7 @@ export default function BlogSlider({ posts, layout = "stack" }: BlogSliderProps)
                         <img
                           src={post.imageUrl}
                           alt={post.title}
-                          className="h-full w-full object-cover opacity-85 transition-transform duration-700 group-hover:scale-[1.04]"
+                          className="block h-full w-full object-cover opacity-85 transition-transform duration-700 group-hover:scale-[1.04]"
                         />
                       ) : (
                         <div

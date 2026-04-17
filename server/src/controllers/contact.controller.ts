@@ -18,20 +18,32 @@ export async function sendContactMail(req: Request, res: Response) {
     return res.status(400).json({ message: "name, email and message are required" });
   }
 
-  const to = process.env.CONTACT_TO_EMAIL;
-  const host = process.env.SMTP_HOST;
-  const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const to = process.env.CONTACT_TO_EMAIL?.trim();
+  const host = process.env.SMTP_HOST?.trim();
+  const rawPort = process.env.SMTP_PORT?.trim();
+  const port = rawPort ? Number(rawPort) : undefined;
+  const user = process.env.SMTP_USER?.trim();
+  const rawPass = process.env.SMTP_PASS?.trim();
+  const pass =
+    host?.toLowerCase().includes("gmail") && rawPass
+      ? rawPass.replace(/\s+/g, "")
+      : rawPass;
+  const secureEnv = process.env.SMTP_SECURE?.trim().toLowerCase();
+  const secure =
+    secureEnv === "true" || secureEnv === "1"
+      ? true
+      : secureEnv === "false" || secureEnv === "0"
+        ? false
+        : port === 465;
 
-  if (!to || !host || !port || !user || !pass) {
+  if (!to || !host || !port || !Number.isFinite(port) || !user || !pass) {
     return res.status(500).json({ message: "mail server not configured" });
   }
 
   const transporter = nodemailer.createTransport({
     host,
     port,
-    secure: port === 465,
+    secure,
     connectionTimeout: 15_000,
     greetingTimeout: 15_000,
     socketTimeout: 20_000,

@@ -103,9 +103,12 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 
       {post.imageUrl && (
         <Reveal delay={0.08}>
-          <div className="overflow-hidden rounded-3xl border" style={{ borderColor: "rgb(var(--surface2))" }}>
+          <div
+            className="relative aspect-[16/10] overflow-hidden rounded-3xl border sm:aspect-[16/9]"
+            style={{ borderColor: "rgb(var(--surface2))" }}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={post.imageUrl} alt={post.title} className="h-72 w-full object-cover sm:h-96" />
+            <img src={post.imageUrl} alt={post.title} className="absolute inset-0 block h-full w-full object-cover" />
           </div>
         </Reveal>
       )}
