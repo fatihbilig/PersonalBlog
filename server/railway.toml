@@ -7,4 +7,4 @@ dockerfilePath = "Dockerfile"
 # Bu API servisinde Variables: DATABASE_URL zorunlu. MySQL eklentisi genelde MYSQL_URL üretir;
 # burada yeni değişken açıp değer olarak ${{ <MySQL-servis-adın>.MYSQL_URL }} referansını seç (veya Connect’ten mysql://… yapıştır).
 [deploy]
-startCommand = "node dist/index.js"
+startCommand = "npx prisma db push && node dist/index.js"
