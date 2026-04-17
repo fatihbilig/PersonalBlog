@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { normalizePublicImageUrl } from "../lib/public-url";
 import { slugify } from "../utils/slugify";
 import { getClientIp } from "../utils/client-ip";
 import geoip from "geoip-lite";
@@ -72,7 +73,7 @@ function formatPost(p: RawPost) {
     slug: p.slug,
     content: p.content,
     excerpt: p.excerpt,
-    imageUrl: p.imageUrl,
+    imageUrl: normalizePublicImageUrl(p.imageUrl),
     viewCount: p.viewCount,
     category: categoryFromDatabase(p.category),
     date: p.createdAt.toISOString().slice(0, 10),

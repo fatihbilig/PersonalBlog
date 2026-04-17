@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { normalizePublicImageUrl } from "../lib/public-url";
 import { slugify } from "../utils/slugify";
 
 type ProjectDto = {
@@ -38,7 +39,7 @@ function toProjectDto(p: {
     slug: slugify(p.title),
     summary: p.description || null,
     tech: tech.length ? tech : null,
-    imageUrl: p.imageUrl ?? null,
+    imageUrl: normalizePublicImageUrl(p.imageUrl),
     links: links.length ? links : null,
     highlights: null,
   };
@@ -245,4 +246,3 @@ export async function deleteProject(req: Request, res: Response) {
     return res.status(404).json({ message: "project not found" });
   }
 }
-
