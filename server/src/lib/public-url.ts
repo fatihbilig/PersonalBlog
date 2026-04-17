@@ -15,7 +15,7 @@ export function normalizePublicImageUrl(raw?: string | null): string | null {
   const publicBase = getPublicBase();
   if (!publicBase) return value;
 
-  if (value.startsWith("/uploads/")) {
+  if (value.startsWith("/uploads/") || value.startsWith("/api/images/")) {
     return `${publicBase}${value}`;
   }
 
@@ -27,7 +27,10 @@ export function normalizePublicImageUrl(raw?: string | null): string | null {
       host === "127.0.0.1" ||
       host === "0.0.0.0";
 
-    if (isLocalHost && parsed.pathname.startsWith("/uploads/")) {
+    if (
+      isLocalHost &&
+      (parsed.pathname.startsWith("/uploads/") || parsed.pathname.startsWith("/api/images/"))
+    ) {
       return `${publicBase}${parsed.pathname}${parsed.search}${parsed.hash}`;
     }
   } catch {

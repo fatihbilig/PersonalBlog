@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import crypto from "crypto";
+import { prisma } from "./prisma";
 
 /** Canlıda kalıcı disk (Docker volume vb.): UPLOADS_DIR=/data/uploads */
 export function getUploadsDir(): string {
@@ -34,27 +34,23 @@ export async function uploadImageBuffer(params: {
   filename?: string;
   mimetype?: string;
 }) {
-  ensureUploadsDir();
   const { buffer, filename, mimetype = "image/jpeg" } = params;
-  const UPLOADS_DIR = getUploadsDir();
-
-  const ext = filename
-    ? path.extname(filename).replace(".", "") || getExtFromMime(mimetype)
-    : getExtFromMime(mimetype);
-
-  const hash = crypto.randomBytes(12).toString("hex");
-  const saveName = `${hash}.${ext}`;
-  const savePath = path.join(UPLOADS_DIR, saveName);
-
-  fs.writeFileSync(savePath, buffer);
+  const asset = await prisma.imageAsset.create({
+    data: {
+      mimeType: mimetype,
+      originalName: filename?.trim() || null,
+      data: Uint8Array.from(buffer),
+    },
+    select: { id: true },
+  });
 
   /**
    * Canlıda mutlaka ayarla: https://api.senindomainin.com (path ve sonda / olmadan)
-   * Aksi halde dönen URL localhost kalır; DB'ye yanlış adres yazılır.
+   * Aksi halde dönen URL localhost kalır; Post/Project.imageUrl alanına yanlış adres yazılır.
    */
   const base = (process.env.SERVER_URL?.trim() || "http://localhost:4000").replace(/\/+$/, "");
-  const url = `${base}/uploads/${saveName}`;
+  const url = `${base}/api/images/${asset.id}`;
 
-  return { url, publicId: saveName };
+  return { url, publicId: asset.id };
 }
 

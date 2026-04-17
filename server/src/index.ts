@@ -8,6 +8,7 @@ import { errorMiddleware } from "./middleware/error.middleware";
 import { authRouter } from "./routes/auth.routes";
 import { adminRouter } from "./routes/admin.routes";
 import { contactRouter } from "./routes/contact.routes";
+import { imageRouter } from "./routes/image.routes";
 import { postRouter } from "./routes/post.routes";
 import { projectRouter } from "./routes/project.routes";
 import { uploadRouter } from "./routes/upload.routes";
@@ -51,6 +52,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/posts", postRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/images", imageRouter);
 app.use("/api/contact", contactRouter);
 
 app.use((_req, res) => res.status(404).json({ message: "not found" }));
@@ -61,4 +63,3 @@ app.listen(port, () => {
   const origins = corsOrigins().join(", ");
   console.log(`[server] http://localhost:${port}  (CORS: ${origins})`);
 });
-

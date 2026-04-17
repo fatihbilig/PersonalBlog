@@ -67,3 +67,13 @@ model VisitorLog {
   @@index([createdAt])
   @@index([country])
 }
+
+model ImageAsset {
+  id           String   @id @default(cuid())
+  mimeType     String   @db.VarChar(128)
+  originalName String?  @db.VarChar(255)
+  data         Bytes    @db.LongBlob
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+}
